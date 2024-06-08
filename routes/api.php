@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\TaiKhoanGVController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,33 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+// Route::get('/taikhoangv/{id}', [TaiKhoanGVController::class, 'show']);
+// Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
+// Route::get('/taikhoangv/{id}/edit', [TaiKhoanGVController::class, 'edit']);
+// Route::post('/login', [TaiKhoanGVController::class, 'login']);
+
+// Route::group([
+//     'middleware' => 'api',
+//     'prefix' => 'auth'
+
+// ], function ($router) {
+//     Route::get('/taikhoangv/{id}', [TaiKhoanGVController::class, 'show']);
+//     Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
+//     Route::get('/taikhoangv/{id}/edit', [TaiKhoanGVController::class, 'edit']);
+//     Route::post('/login', [TaiKhoanGVController::class, 'login']);
+// });
+
+Route::post('/login', [TaiKhoanGVController::class, 'login'])->name('login');
+// Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
+    Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
+    Route::get('/taikhoangv/{id}', [TaiKhoanGVController::class, 'show']);
+    Route::get('/taikhoangv/{id}/edit', [TaiKhoanGVController::class, 'edit']);
+    Route::put('/taikhoangv/{id}', [TaiKhoanGVController::class, 'update']);
+    Route::delete('/taikhoangv/{id}', [TaiKhoanGVController::class, 'destroy']);
+    Route::post('/taikhoangv', [TaiKhoanGVController::class, 'store']);
+
+// });
