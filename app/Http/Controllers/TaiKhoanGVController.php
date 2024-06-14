@@ -42,19 +42,19 @@ class TaiKhoanGVController extends Controller
 
         return response()->json($taikhoangv);
     }
-    public function login(Request $request)
-    {
-        $credentials = $request->only('ma_gv', 'mat_khau');
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('ma_gv', 'mat_khau');
 
-        $user = TaiKhoanGV::where('ma_gv', $credentials['ma_gv'])->first();
+    //     $user = TaiKhoanGV::where('ma_gv', $credentials['ma_gv'])->first();
 
-        if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
-            $token = $user->createToken('API Token')->plainTextToken;
-            return response()->json(['token' => $token], 200);
-        } else {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-    }
+    //     if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
+    //         $token = $user->createToken('GiaoVien')->plainTextToken;
+    //         return response()->json(['token' => $token], 200);
+    //     } else {
+    //         return response()->json(['error' => 'Unauthorized'], 401);
+    //     }
+    // }
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -102,13 +102,13 @@ class TaiKhoanGVController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_gv' => 'required|string|max:10',
+            'ma_gv' => 'required|string|max:10|unique:giao_vien',
             'ten_gv' => 'required|string|max:150',
             'ngay_sinh' => 'required|date',
             'phai' => 'required|in:1,0',
             'dia_chi' => 'required|string|max:300',
             'sdt' => 'required|string|max:11',
-            'email' => 'required|email|max:50', // Thêm unique validation
+            'email' => 'required|email|max:50|unique:giao_vien',
             'password' => 'required|confirmed',
         ], [
             'ma_gv.required' => 'Nhập mã giáo viên',
@@ -162,6 +162,5 @@ class TaiKhoanGVController extends Controller
 
         return response()->json(['message' => 'Tạo tài khoản giáo viên thành công!'], 200);
     }
-
 
 }
