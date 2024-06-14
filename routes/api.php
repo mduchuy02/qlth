@@ -32,5 +32,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/taikhoangv/{id}', [TaiKhoanGVController::class, 'update']);
     Route::delete('/taikhoangv/{id}', [TaiKhoanGVController::class, 'destroy']);
     Route::post('/taikhoangv', [TaiKhoanGVController::class, 'store']);
-    Route::get('/lichgd/{id}', [LichDayController::class, 'show']);
+    Route::get('/hocky/{id}', [LichDayController::class, 'getHocKy']);
 });
