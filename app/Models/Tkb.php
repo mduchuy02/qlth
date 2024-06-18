@@ -27,11 +27,10 @@ class Tkb extends Model
     public function diemDanh(): HasOne
     {
         return $this->hasOne(DiemDanh::class, 'ma_tkb', 'ma_tkb');
-    }   
-    
+    }
+
     public function lichDay(): BelongsTo
     {
         return $this->belongsTo(LichDay::class, 'ma_gd', 'ma_gd');
     }
-
 }

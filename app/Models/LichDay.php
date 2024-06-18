@@ -20,14 +20,15 @@ class LichDay extends Model
         'ma_gv',
         'ma_mh',
         'phong_hoc',
-        'thoi_gian',
+        'ngay_bd',
+        'ngay_kt',
         'st_bd',
         'st_kt',
     ];
 
     public function giaoVien(): BelongsTo
     {
-        return $this->belongsTo(GiaoVien::class, 'ma_gv','ma_gv');
+        return $this->belongsTo(GiaoVien::class, 'ma_gv', 'ma_gv');
     }
 
     public function lichHocs(): HasMany

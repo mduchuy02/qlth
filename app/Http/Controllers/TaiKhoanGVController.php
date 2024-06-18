@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GiaoVien;
 use App\Models\TaiKhoanGV;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,20 +14,13 @@ use Illuminate\Support\Str;
 class TaiKhoanGVController extends Controller
 {
     //
-    public function show($id)
-    {
-        // return TaiKhoanGV::join('giao_vien', 'tai_khoan_gv.ma_gv', 'giao_vien.ma_gv')
-        //     ->select('tai_khoan_gv.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email')
-        //     ->findOrFail($id);
-        return TaiKhoanGV::findOrFail($id);
-    }
+
     public function index()
     {
-        $taikhoangv = TaiKhoanGV::join('giao_vien','tai_khoan_gv.ma_gv','giao_vien.ma_gv')
-        ->select('tai_khoan_gv.ma_gv','giao_vien.ten_gv as name','giao_vien.ngay_sinh','giao_vien.phai','giao_vien.dia_chi','giao_vien.sdt','giao_vien.email')
-        ->get();
+        $taikhoangv = User::join('giao_vien', 'users.ma_gv', 'giao_vien.ma_gv')
+            ->select('giao_vien.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email')
+            ->get();
 
-        // Add a dynamically generated ID column
         $taikhoangv = $taikhoangv->map(function ($item, $key) {
             $item->id = $key + 1;
             return $item;
@@ -36,29 +30,16 @@ class TaiKhoanGVController extends Controller
     }
     public function edit($id)
     {
-        $taikhoangv = TaiKhoanGV::join('giao_vien', 'tai_khoan_gv.ma_gv', 'giao_vien.ma_gv')
-            ->select('tai_khoan_gv.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email')
-            ->find($id);
-
+        $taikhoangv = User::join('giao_vien', 'users.ma_gv', 'giao_vien.ma_gv')
+            ->select('giao_vien.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email')
+            ->where('giao_vien.ma_gv', $id)
+            ->first();
         return response()->json($taikhoangv);
     }
-    // public function login(Request $request)
-    // {
-    //     $credentials = $request->only('ma_gv', 'mat_khau');
 
-    //     $user = TaiKhoanGV::where('ma_gv', $credentials['ma_gv'])->first();
-
-    //     if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
-    //         $token = $user->createToken('GiaoVien')->plainTextToken;
-    //         return response()->json(['token' => $token], 200);
-    //     } else {
-    //         return response()->json(['error' => 'Unauthorized'], 401);
-    //     }
-    // }
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
 
@@ -74,8 +55,8 @@ class TaiKhoanGVController extends Controller
             'password' => 'sometimes|nullable|string|min:8|confirmed'
         ]);
 
-        $taikhoan = TaiKhoanGV::findOrFail($id);
-        $giaovien = GiaoVien::where('ma_gv', $taikhoan->ma_gv)->firstOrFail();
+        $taikhoan = User::findOrFail($id);
+        $giaovien = GiaoVien::where('ma_gv', $taikhoan->username)->firstOrFail();
 
         $giaovien->ten_gv = $request->ten_gv;
         $giaovien->ngay_sinh = $request->ngay_sinh;
@@ -86,10 +67,9 @@ class TaiKhoanGVController extends Controller
         $giaovien->save();
 
         if ($request->filled('password')) {
-            $taikhoan->mat_khau = Hash::make($request->password);
+            $taikhoan->password = Hash::make($request->password);
             $taikhoan->save();
         }
-
         return response()->json(['message' => 'Cập nhật thành công!'], 200);
     }
 
@@ -162,5 +142,4 @@ class TaiKhoanGVController extends Controller
 
         return response()->json(['message' => 'Tạo tài khoản giáo viên thành công!'], 200);
     }
-
 }
