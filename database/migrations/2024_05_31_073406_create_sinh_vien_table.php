@@ -17,7 +17,7 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
             $table->collation = 'utf8mb4_unicode_ci';
-            
+
             $table->string("ma_sv", 10);
             $table->primary("ma_sv");
             $table->string("ten_sv", 150)->nullable(false);
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string("anh_qr", 20)->unique();
             $table->string("ma_lop", 20);
             // $table->timestamps();
-            
+
             $table->foreign("ma_lop")->references("ma_lop")->on("lop");
         });
     }

@@ -7,19 +7,25 @@ use App\Models\GiaoVien;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TaiKhoanGV;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
 class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $credentials = $request->only('ma_gv', 'mat_khau');
+        $credentials = $request->only('username', 'password');
+        $user = User::where('username', $credentials['username'])->first();
 
-        $user = TaiKhoanGV::where('ma_gv', $credentials['ma_gv'])->first();
+        if ($user && Hash::check($credentials['password'], $user->password)) {
+            $token = $user->createToken('authToken')->plainTextToken;
 
-        if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
-            $token = $user->createToken('GiaoVien')->plainTextToken;
-            return response()->json(['token' => $token], 200);
+            // kiểm tra sinh viên hay giáo viên
+            $role = $user->role;
+            return response()->json([
+                'token' => $token,
+                'role' => $role,
+            ], 200);
         } else {
             return response()->json(['error' => 'Thông tin đăng nhập không chính xác'], 401);
         }
@@ -27,8 +33,7 @@ class LoginController extends Controller
     public function getUserByToken(Request $request)
     {
         $user = Auth::user();
-        $giaovien = GiaoVien::findOrFail($user->ma_gv);
+        $giaovien = GiaoVien::findOrFail($user->username);
         return response()->json(['giaovien' => $giaovien], 200);
     }
-
 }

@@ -13,5 +13,4 @@ class LopController extends Controller
         $lop = Lop::get('ma_lop');
         return response()->json($lop);
     }
-    
 }

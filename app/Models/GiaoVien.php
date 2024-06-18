@@ -27,12 +27,15 @@ class GiaoVien extends Model
         'email',
     ];
 
-    public function taiKhoanGV(): HasOne
+    // public function taiKhoanGV(): HasOne
+    // {
+    //     return $this->hasOne(User::class, 'ma_gv', 'ma_gv');
+    // }
+    public function users(): HasOne
     {
-        return $this->hasOne(TaiKhoanGV::class, 'ma_gv', 'ma_gv');
+        return $this->hasOne(User::class, 'ma_gv', 'ma_gv');
     }
 
-    
     public function lichDays(): HasMany
     {
         return $this->hasMany(LichDay::class, 'ma_gv', 'ma_gv');

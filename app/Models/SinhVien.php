@@ -16,7 +16,7 @@ class SinhVien extends Model
     protected $primaryKey = 'ma_sv';
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = false; 
+    public $timestamps = false;
 
     protected $fillable = [
         'ma_sv',
@@ -35,16 +35,15 @@ class SinhVien extends Model
         return $this->belongsTo(Lop::class, 'ma_lop', 'ma_lop');
     }
 
-    public function taiKhoanSV(): HasOne
+    public function users(): HasOne
     {
-        return $this->hasOne(TaiKhoanSV::class, 'ma_sv', 'ma_sv');
+        return $this->hasOne(User::class, 'username', 'ma_sv');
     }
-
     public function lichHocs(): HasMany
     {
         return $this->hasMany(LichHoc::class, 'ma_sv', 'ma_sv');
     }
-    
+
     public function ketQuas(): HasMany
     {
         return $this->hasMany(KetQua::class, 'ma_sv', 'ma_sv');

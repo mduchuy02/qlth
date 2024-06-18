@@ -34,7 +34,7 @@ class TaiKhoanSVController extends Controller
     public function edit($id)
     {
         $taikhoansv = TaiKhoanSV::join('sinh_vien', 'tai_khoan_sv.ma_sv', 'sinh_vien.ma_sv')
-            ->select('tai_khoan_sv.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.ngay_sinh', 'sinh_vien.email', 'sinh_vien.phai', 'sinh_vien.sdt', 'sinh_vien.ma_lop','sinh_vien.dia_chi')
+            ->select('tai_khoan_sv.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.ngay_sinh', 'sinh_vien.email', 'sinh_vien.phai', 'sinh_vien.sdt', 'sinh_vien.ma_lop', 'sinh_vien.dia_chi')
             ->find($id);
 
         return response()->json($taikhoansv);
