@@ -55,7 +55,7 @@ class TaiKhoanGVController extends Controller
             'password' => 'sometimes|nullable|string|min:8|confirmed'
         ]);
 
-        $taikhoan = User::findOrFail($id);
+        $taikhoan = User::where('username',$id)->firstOrFail();
         $giaovien = GiaoVien::where('ma_gv', $taikhoan->username)->firstOrFail();
 
         $giaovien->ten_gv = $request->ten_gv;
@@ -135,9 +135,12 @@ class TaiKhoanGVController extends Controller
         ]);
 
         // Tạo mới tài khoản giáo viên và lưu vào cơ sở dữ liệu
-        $taikhoangv = TaiKhoanGV::create([
+        $taikhoangv = User::create([
+            'username' => $request["ma_gv"],
             'ma_gv' => $request["ma_gv"],
-            'mat_khau' => Hash::make($request["password"]),
+            'password' => Hash::make($request["password"]),
+            'email' => $request["email"],
+            'role' => 'teacher'
         ]);
 
         return response()->json(['message' => 'Tạo tài khoản giáo viên thành công!'], 200);

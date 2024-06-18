@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LopController;
 use App\Http\Controllers\TaiKhoanGVController;
 use App\Http\Controllers\TaiKhoanSVController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,6 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->group(function () {
     //Tai khoan giao vien
-    Route::get('/taikhoangv', [LoginController::class, 'getUserByToken']);
     Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
     Route::get('/taikhoangv/{id}', [TaiKhoanGVController::class, 'show']);
     Route::get('/taikhoangv/{id}/edit', [TaiKhoanGVController::class, 'edit']);
@@ -43,7 +43,10 @@ Route::middleware('auth:sanctum')->group(function () {
     //Lop
     Route::get('/lop', [LopController::class, 'index']);
     //else
+    Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
     Route::get('/hocky/{id}', [LichDayController::class, 'getHocKy']);
     Route::get('/lichgd/{ma_gv}', [LichDayController::class, 'getLichGD']);
+    //test
+    Route::get('/getUser/{id}', [UserController::class,'show']);
 });

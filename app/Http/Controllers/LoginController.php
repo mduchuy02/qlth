@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SinhVien;
 use Illuminate\Http\Request;
 use App\Models\GiaoVien;
 use Illuminate\Support\Facades\Hash;
@@ -33,7 +34,32 @@ class LoginController extends Controller
     public function getUserByToken(Request $request)
     {
         $user = Auth::user();
-        $giaovien = GiaoVien::findOrFail($user->username);
-        return response()->json(['giaovien' => $giaovien], 200);
+        if($user->role == 'teacher') {
+            $giaovien = GiaoVien::findOrFail($user->username);
+            $mappedGiaoVien = [
+                'ma' => $giaovien->ma_gv,
+                'ten' => $giaovien->ten_gv,
+                'ngay_sinh' => $giaovien->ngay_sinh,
+                'phai' => $giaovien->phai,
+                'dia_chi' => $giaovien->dia_chi,
+                'sdt' => $giaovien->sdt,
+                'email' => $giaovien->email,
+            ];
+            return response()->json(['giaovien' => $mappedGiaoVien], 200);
+        } elseif($user->role == 'student') {
+            $sinhvien = SinhVien::findOrFail($user->username);
+            $mappedSinhVien = [
+                'ma' => $sinhvien->ma_sv,
+                'ten' => $sinhvien->ten_sv,
+                'ngay_sinh' => $sinhvien->ngay_sinh,
+                'phai' => $sinhvien->phai,
+                'dia_chi' => $sinhvien->dia_chi,
+                'sdt' => $sinhvien->sdt,
+                'email' => $sinhvien->email,
+                'anh_qr' => $sinhvien->anh_qr,
+                'ma_lop' => $sinhvien->ma_lop
+            ];
+            return response()->json(['sinhvien' => $mappedSinhVien], 200);
+        }
     }
 }
