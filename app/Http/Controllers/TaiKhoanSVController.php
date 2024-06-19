@@ -136,7 +136,7 @@ class TaiKhoanSVController extends Controller
             'sdt' => $request['sdt'],
             'email' => $request['email'],
             'ma_lop' => $request['ma_lop'], // Thêm ma_lop vào để lưu vào cơ sở dữ liệu
-            'anh_qr' => $request['ma_sv'].'png',
+            'anh_qr' => $request['ma_sv'] . 'png',
         ]);
 
         // Tạo mới tài khoản sinh viên và lưu vào cơ sở dữ liệu

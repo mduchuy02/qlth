@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LopController;
+use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\TaiKhoanGVController;
 use App\Http\Controllers\TaiKhoanSVController;
+use App\Http\Controllers\TKBController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,10 +27,8 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-
 Route::post('/validate-token', [LoginController::class, 'validateToken']);
 Route::post('/login', [LoginController::class, 'login'])->name('login');
-
 Route::middleware('auth:sanctum')->group(function () {
     //Tai khoan giao vien
     Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
@@ -44,10 +45,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/taikhoansv', [TaiKhoanSVController::class, 'store']);
     //Lop
     Route::get('/lop', [LopController::class, 'index']);
-    //get token
-    Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     //else
+    Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
     Route::get('/hocky/{id}', [LichDayController::class, 'getHocKy']);
     Route::get('/lichgd/{ma_gv}', [LichDayController::class, 'getLichGD']);
+    //test
+    Route::get('/getUser/{id}', [UserController::class, 'show']);
+    //Sinh Vien
+    Route::get('/thoi-khoa-bieu', [TKBController::class, 'getTimeTable']);
+    Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
+    Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
 });

@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LichHoc extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'lich_hoc';
     protected $primaryKey = [
-        'ma_sv', 
+        'ma_sv',
         'ma_gd'
     ];
-
+    public $incrementing = false;
     protected $keyType = 'mixed';
     public $timestamps = false;
 

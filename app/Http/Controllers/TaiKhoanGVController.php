@@ -55,7 +55,7 @@ class TaiKhoanGVController extends Controller
             'password' => 'sometimes|nullable|string|min:8|confirmed'
         ]);
 
-        $taikhoan = User::where('username',$id)->firstOrFail();
+        $taikhoan = User::where('username', $id)->firstOrFail();
         $giaovien = GiaoVien::where('ma_gv', $taikhoan->username)->firstOrFail();
 
         $giaovien->ten_gv = $request->ten_gv;

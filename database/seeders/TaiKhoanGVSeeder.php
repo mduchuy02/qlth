@@ -18,8 +18,7 @@ class TaiKhoanGVSeeder extends Seeder
     public function run()
     {
         $giaoviens = GiaoVien::all();
-        foreach($giaoviens as $gv)
-        {
+        foreach ($giaoviens as $gv) {
             DB::table('tai_khoan_gv')->insert([
                 'ma_gv' => $gv->ma_gv,
                 'mat_khau' => Hash::make($gv->ma_gv),
