@@ -16,36 +16,31 @@ class LichDayController extends Controller
     }
     public function getHocKy($ma_gv)
     {
-        $lichDays = LichDay::where('ma_gv', $ma_gv)->get();
-        $thoiGianHoc = [];
-        foreach ($lichDays as $lichDay) {
-            $thoiGian = explode('-', $lichDay->thoi_gian);
-            $ngayBatDau = date_create_from_format('d/m/Y', trim($thoiGian[0]));
-            $month = $ngayBatDau->format('m');
-            switch ($month) {
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 1:
-                    $hoc_ky = 1;
-                    break;
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                    $hoc_ky = 2;
-                    break;
-                case 7:
-                case 8:
-                    $hoc_ky = 3;
-                    break;
-            }
-            $year = $ngayBatDau->format('Y');
-            $lichDay->hoc_ky = "Học kỳ " . $hoc_ky . " năm học " . $year . "-" . $year + 1;
-            array_push($thoiGianHoc, $lichDay->hoc_ky);
+        $querys = LichDay::where('ma_gv', $ma_gv)->get('hoc_ky');
+        foreach($querys as $query) {
+            $hocky = str_split($query);
+            $query->hoc_ky_text = "Học kỳ " . $hocky[10] . " năm học 20" . $hocky[11] . $hocky[12] . "-20" . $hocky[11] . $hocky[12] + 1;
         }
-        return $thoiGianHoc;
+        return response()->json($querys);
+    }
+    public function getLichGD(Request $request, $magv)
+    {
+        $hocKy = $request->query('hoc_ky');
+        $lichGD = LichDay::where('ma_gv', $magv)
+        ->where('hoc_ky',$hocKy)
+            ->join('mon_hoc', 'lich_gd.ma_mh', '=', 'mon_hoc.ma_mh')
+            ->select(
+                'lich_gd.ma_gd as key',
+                'lich_gd.ma_mh as MaMH',
+                'mon_hoc.ten_mh as TenMH',
+                'mon_hoc.so_tiet as SoTiet',
+                'lich_gd.st_bd as TietBD',
+                'lich_gd.st_kt as ST',
+                'lich_gd.phong_hoc as Phong',
+                'lich_gd.ngay_bd as NgayBD',
+                'lich_gd.ngay_kt as NgayKT',
+            )
+        ->get();
+        return response()->json($lichGD);
     }
 }
