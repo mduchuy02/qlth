@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\TaiKhoanGV;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class LoginController extends Controller
 {
@@ -19,7 +20,7 @@ class LoginController extends Controller
         $user = User::where('username', $credentials['username'])->first();
 
         if ($user && Hash::check($credentials['password'], $user->password)) {
-            $token = $user->createToken('authToken')->plainTextToken;
+            $token = $user->createToken('authToken', ['*'], now()->addMinutes(120))->plainTextToken;
 
             // kiểm tra sinh viên hay giáo viên
             $role = $user->role;
@@ -61,5 +62,20 @@ class LoginController extends Controller
             ];
             return response()->json(['sinhvien' => $mappedSinhVien], 200);
         }
+    }
+    public function validateToken(Request $request)
+    {
+        $token = $request->token;
+        if (!$token) {
+            return response()->json(['valid' => false, 'message' => 'Token is required'], 400);
+        }
+
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if ($accessToken) {
+            return response()->json(['valid' => true], 200);
+        }
+
+        return response()->json(['valid' => false, 'message' => 'Token is invalid or expired'], 401);
     }
 }

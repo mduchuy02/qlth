@@ -25,7 +25,9 @@ use Illuminate\Support\Facades\Route;
 // });
 
 
+Route::post('/validate-token', [LoginController::class, 'validateToken']);
 Route::post('/login', [LoginController::class, 'login'])->name('login');
+
 Route::middleware('auth:sanctum')->group(function () {
     //Tai khoan giao vien
     Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
@@ -42,11 +44,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/taikhoansv', [TaiKhoanSVController::class, 'store']);
     //Lop
     Route::get('/lop', [LopController::class, 'index']);
-    //else
+    //get token
     Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
+    //else
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
     Route::get('/hocky/{id}', [LichDayController::class, 'getHocKy']);
     Route::get('/lichgd/{ma_gv}', [LichDayController::class, 'getLichGD']);
-    //test
-    Route::get('/getUser/{id}', [UserController::class,'show']);
 });
