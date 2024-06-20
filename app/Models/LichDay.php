@@ -19,11 +19,13 @@ class LichDay extends Model
     protected $fillable = [
         'ma_gv',
         'ma_mh',
+        'nmh',
         'phong_hoc',
         'ngay_bd',
         'ngay_kt',
         'st_bd',
         'st_kt',
+        'hoc_ky'
     ];
 
     public function giaoVien(): BelongsTo
