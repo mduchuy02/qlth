@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DiemDanhController;
 use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
 use App\Http\Controllers\LoginController;
@@ -45,13 +46,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/taikhoansv', [TaiKhoanSVController::class, 'store']);
     //Lop
     Route::get('/lop', [LopController::class, 'index']);
+    //Diem danh
+    Route::get('/getLichDiemDanh/{id}', [DiemDanhController::class, 'getLichDiemDanh']);
+    Route::post('/getDanhSachSinhVien', [DiemDanhController::class, 'getDanhSachSinhVien']);
     //else
     Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
     Route::get('/hocky/{id}', [LichDayController::class, 'getHocKy']);
     Route::get('/lichgd/{ma_gv}', [LichDayController::class, 'getLichGD']);
     //test
-    Route::get('/getUser/{id}', [UserController::class, 'show']);
+    Route::get('/getUser/{ma_gv}', [UserController::class, 'show']);
     //Sinh Vien
     Route::get('/thoi-khoa-bieu', [TKBController::class, 'getTimeTable']);
     Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
