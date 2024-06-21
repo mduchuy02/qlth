@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiemDanh;
 use App\Models\LichDay;
 use App\Models\SinhVien;
 use App\Models\Tkb;
@@ -9,29 +10,6 @@ use Illuminate\Http\Request;
 
 class DiemDanhController extends Controller
 {
-    //
-    // public function getLichDiemDanh($ma_gv)
-    // {
-    //     $lich = LichDay::where('ma_gv', $ma_gv)
-    //         ->join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')
-    //         ->select('ma_gd', 'lich_gd.ma_mh', 'mon_hoc.ten_mh', 'st_bd', 'st_bd', 'st_kt')->get()
-    //         ->map(function ($item) {
-    //             // Extract semester and year from hoc_ky
-    //             $hocKy = $item->hoc_ky;
-    //             $semester = intdiv($hocKy, 100); // The last digit represents the semester
-    //             $yearCode = $hocKy % 100; // The remaining part represents the year code
-    //             $startYear = 2000 + $yearCode;
-    //             $endYear = $startYear + 1;
-    //             $formattedHocKy = "Học kỳ $semester năm học $startYear-$endYear";
-
-    //             // Modify the item with the formatted hoc_ky
-    //             $item->nam_hoc = $formattedHocKy;
-    //             return $item;
-    //         });
-
-    //     // Chuyển đổi collection thành mảng và trả về dưới dạng JSON
-    //     return response()->json($lich);
-    // }
     public function getLichDiemDanh($ma_gv)
     {
         $lich = LichDay::where('ma_gv', $ma_gv)
@@ -53,30 +31,6 @@ class DiemDanhController extends Controller
             });
         return response()->json($lich);
     }
-    // public function getDanhSachSinhVien(Request $request)
-    // {
-    //     $magd = $request->ma_gd;
-    //     $ngayDiemDanh = $request->ngay_diem_danh;
-    //     // $danhSach = LichDay::join('tkb', 'tkb.ma_gd', 'lich_gd.ma_gd')
-    //     //     ->where('lich_gd.ma_gd',$magd)
-    //     //     ->where('ngay_hoc',$ngayDiemDanh)
-    //     //     ->get();
-    //     $danhSach = Tkb::join('lich_hoc', 'tkb.ma_gd', 'lich_hoc.ma_gd')
-    //         ->where('lich_hoc.ma_gd', $magd)
-    //         ->where('ngay_hoc', $ngayDiemDanh)
-    //         ->join('sinh_vien', 'sinh_vien.ma_sv', 'lich_hoc.ma_sv')
-    //         ->select('ma_tkb', 'ngay_hoc', 'sinh_vien.ma_sv', 'ten_sv', 'ma_lop')
-    //         ->get();
-    //     if ($danhSach->isEmpty()) {
-    //         return response()->json(['message' => 'Không tìm thấy danh sách sinh viên phù hợp.'], 404);
-    //     }
-
-    //     $danhSach = $danhSach->map(function ($item, $key) {
-    //         $item->id = $key + 1;
-    //         return $item;
-    //     });
-    //     return response()->json($danhSach);
-    // }
     public function getDanhSachSinhVien(Request $request)
     {
 
@@ -87,6 +41,57 @@ class DiemDanhController extends Controller
         $sinhVienList = SinhVien::whereHas('lichHocs', function ($query) use ($maGdList) {
             $query->whereIn('ma_gd', $maGdList);
         })->get();
+        if($sinhVienList->isEmpty()) {
+            return response()->json(['message' => 'Không tìm thấy danh sách sinh viên phù hợp.'], 404);
+        }
+        $sinhVienList = $sinhVienList->map(function ($sinhVien, $index) {
+            $sinhVien->key = $index + 1; // Adding 1 to start keys from 1 instead of 0
+            return $sinhVien;
+        });
+
         return response()->json($sinhVienList);
+    }
+    public function diemDanhSinhVien(Request $request)
+    {
+        $students = $request->input('students', []);
+        $currentDate = now()->format('Y-m-d');
+
+        try {
+            foreach ($students as $student) {
+                if($student['co_mat']) {
+                    $tkb = Tkb::where("ma_gd", $student["ma_gd"])
+                        ->where("ngay_hoc", $student["ngay_diem_danh"])
+                        ->select("ma_tkb")
+                        ->first(); // Lấy ra đối tượng Tkb thay vì danh sách
+                    if ($tkb) {
+                        $existingRecord = DiemDanh::where('ngay_hoc', $student["ngay_diem_danh"])
+                            ->where('ma_tkb', $tkb->ma_tkb)
+                            ->where('ma_sv', $student['ma_sv'])
+                            ->first();
+                        if (!$existingRecord) {
+                            DiemDanh::create([
+                                "ma_tkb" => $tkb->ma_tkb,
+                                "ma_sv" => $student["ma_sv"], // Cung cấp giá trị ma_sv
+                                "ngay_hoc" => $student["ngay_diem_danh"],
+                                "diem_danh1" => $currentDate,
+                                "diem_danh2" => null,
+                            ]);
+                        } else {
+                            // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
+                            $existingRecord->update([
+                                "diem_danh2" => $currentDate,
+                            ]);
+                        }
+                    } else {
+                        // Xử lý khi không tìm thấy $tkb, ví dụ thông báo lỗi hoặc xử lý khác
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Xử lý ngoại lệ khi có lỗi trong quá trình xử lý
+            return response()->json(['message' => 'Lỗi khi gửi danh sách điểm danh!', 'error' => $e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'Điểm danh thành công!'], 200);
     }
 }

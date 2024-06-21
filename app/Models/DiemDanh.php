@@ -16,6 +16,7 @@ class DiemDanh extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'ma_sv',
         'ma_tkb',
         'ngay_hoc',
         'diem_danh1',

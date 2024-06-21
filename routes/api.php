@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Diem danh
     Route::get('/getLichDiemDanh/{id}', [DiemDanhController::class, 'getLichDiemDanh']);
     Route::post('/getDanhSachSinhVien', [DiemDanhController::class, 'getDanhSachSinhVien']);
+    Route::post('/diemDanhSinhVien', [DiemDanhController::class, 'diemDanhSinhVien']);
     //else
     Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
