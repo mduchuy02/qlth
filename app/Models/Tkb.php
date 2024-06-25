@@ -33,4 +33,8 @@ class Tkb extends Model
     {
         return $this->belongsTo(LichDay::class, 'ma_gd', 'ma_gd');
     }
+    public function qrcode(): HasMany
+    {
+        return $this->hasMany(QrCode::class, 'ma_tkb', 'ma_tkb');
+    }
 }
