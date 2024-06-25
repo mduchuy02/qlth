@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\DiemDanh;
 use App\Models\LichDay;
+use App\Models\QrCode;
 use App\Models\SinhVien;
 use App\Models\Tkb;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DiemDanhController extends Controller
 {
@@ -33,7 +36,6 @@ class DiemDanhController extends Controller
     }
     public function getDanhSachSinhVien(Request $request)
     {
-
         $tkbRecords = Tkb::where('ma_gd', $request->ma_gd)
             ->where('ngay_hoc', $request->ngay_hoc)
             ->get();
@@ -50,6 +52,48 @@ class DiemDanhController extends Controller
         });
 
         return response()->json($sinhVienList);
+    }
+
+    public function getIdTKB(Request $request)
+    {
+        try {
+            // Thực hiện truy vấn để lấy dữ liệu từ bảng Tkb
+            $idTKB = Tkb::where('ma_gd', $request->ma_gd)
+                ->where('ngay_hoc', $request->ngay_hoc)
+                ->select('ma_tkb', 'ma_gd', 'ngay_hoc')
+                ->first();
+            if (!$idTKB) {
+                return response()->json(['message' => 'Không tìm thấy dữ liệu'], 404);
+            }
+            return response()->json($idTKB);
+        } catch (QueryExecuted $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình truy vấn cơ sở dữ liệu'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+        }
+    }
+    public function saveQr(Request $request)
+    {
+        try {
+            // Thực hiện insert dữ liệu vào bảng qrcode
+            $code = $request->code;
+            $hyphenPos  = strpos($code, '-');
+            $endTime = substr($code, strpos($code, '-', $hyphenPos + 1) + 1);
+            $ma_tkb = substr($code, 0, $hyphenPos);
+            $fromatCarbon = Carbon::parse($endTime);
+            $formattedEndTime = $fromatCarbon->format('Y-m-d H:i:s');
+
+            // kiemr tra xem qr quả tkb đã tồn tại chưa
+            QrCode::where('ma_tkb', $ma_tkb)->delete();
+
+            $qrCode = new QrCode();
+            $qrCode->ma_tkb = $ma_tkb;
+            $qrCode->thoi_gian_kt = $formattedEndTime;
+            $qrCode->save();
+            return response()->json($formattedEndTime);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi khi lưu QR code: ' . $e->getMessage()], 500);
+        }
     }
     public function diemDanhSinhVien(Request $request)
     {
