@@ -41,7 +41,7 @@ class DiemDanhController extends Controller
         $sinhVienList = SinhVien::whereHas('lichHocs', function ($query) use ($maGdList) {
             $query->whereIn('ma_gd', $maGdList);
         })->get();
-        if($sinhVienList->isEmpty()) {
+        if ($sinhVienList->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy danh sách sinh viên phù hợp.'], 404);
         }
         $sinhVienList = $sinhVienList->map(function ($sinhVien, $index) {
@@ -58,16 +58,16 @@ class DiemDanhController extends Controller
 
         try {
             foreach ($students as $student) {
-                if($student['co_mat']) {
-                    $tkb = Tkb::where("ma_gd", $student["ma_gd"])
-                        ->where("ngay_hoc", $student["ngay_diem_danh"])
-                        ->select("ma_tkb")
-                        ->first(); // Lấy ra đối tượng Tkb thay vì danh sách
+                $tkb = Tkb::where("ma_gd", $student["ma_gd"])
+                    ->where("ngay_hoc", $student["ngay_diem_danh"])
+                    ->select("ma_tkb")
+                    ->first(); // Lấy ra đối tượng Tkb thay vì danh sách
                     if ($tkb) {
-                        $existingRecord = DiemDanh::where('ngay_hoc', $student["ngay_diem_danh"])
-                            ->where('ma_tkb', $tkb->ma_tkb)
-                            ->where('ma_sv', $student['ma_sv'])
-                            ->first();
+                    $existingRecord = DiemDanh::where('ngay_hoc', $student["ngay_diem_danh"])
+                        ->where('ma_tkb', $tkb->ma_tkb)
+                        ->where('ma_sv', $student['ma_sv'])
+                        ->first();
+                    if ($student['co_mat']) {
                         if (!$existingRecord) {
                             DiemDanh::create([
                                 "ma_tkb" => $tkb->ma_tkb,
@@ -75,6 +75,7 @@ class DiemDanhController extends Controller
                                 "ngay_hoc" => $student["ngay_diem_danh"],
                                 "diem_danh1" => $currentDate,
                                 "diem_danh2" => null,
+                                "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
                             ]);
                         } else {
                             // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
@@ -82,8 +83,33 @@ class DiemDanhController extends Controller
                                 "diem_danh2" => $currentDate,
                             ]);
                         }
-                    } else {
-                        // Xử lý khi không tìm thấy $tkb, ví dụ thông báo lỗi hoặc xử lý khác
+                    } else if ($student['co_phep']) {
+                        if (!$existingRecord) {
+                            DiemDanh::create([
+                                "ma_tkb" => $tkb->ma_tkb,
+                                "ma_sv" => $student["ma_sv"], // Cung cấp giá trị ma_sv
+                                "ngay_hoc" => $student["ngay_diem_danh"],
+                                "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
+                            ]);
+                        } else {
+                            // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
+                            $existingRecord->update([
+                                "ghi_chu" => 'có phép'
+                            ]);
+                        }
+                    } else if($student['khong_phep']) {
+                        if (!$existingRecord) {
+                            DiemDanh::create([
+                                "ma_tkb" => $tkb->ma_tkb,
+                                "ma_sv" => $student["ma_sv"], // Cung cấp giá trị ma_sv
+                                "ngay_hoc" => $student["ngay_diem_danh"],
+                                "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
+                            ]);
+                        } else {
+                            // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
+                            // $existingRecord->update([
+                            // ]);
+                        }
                     }
                 }
             }

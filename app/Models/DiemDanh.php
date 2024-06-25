@@ -21,6 +21,7 @@ class DiemDanh extends Model
         'ngay_hoc',
         'diem_danh1',
         'diem_danh2',
+        'ghi_chu',
     ];
 
     public function tkb(): BelongsTo
