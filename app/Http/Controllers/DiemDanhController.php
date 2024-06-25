@@ -66,10 +66,8 @@ class DiemDanhController extends Controller
                 return response()->json(['message' => 'Không tìm thấy dữ liệu'], 404);
             }
             return response()->json($idTKB);
-        } catch (QueryExecuted $e) {
-            return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình truy vấn cơ sở dữ liệu'], 500);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình truy vấn cơ sở dữ liệu'], 500);
         }
     }
     public function saveQr(Request $request)
