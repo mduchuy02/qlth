@@ -148,9 +148,6 @@ class DiemDanhController extends Controller
                                 "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
                             ]);
                         } else {
-                            // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
-                            // $existingRecord->update([
-                            // ]);
                         }
                     }
                 }

@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\SinhVien;
 use Illuminate\Http\Request;
 use App\Models\GiaoVien;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use App\Models\TaiKhoanGV;
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class LoginController extends Controller
@@ -76,6 +75,30 @@ class LoginController extends Controller
                 'ma_lop' => $sinhvien->ma_lop
             ];
             return response()->json(['sinhvien' => $mappedSinhVien], 200);
+        } elseif($user->role == 'super_admin') {
+            $superadmin = Admin::findOrFail($user->username);
+            $mappedAdmin = [
+                'email' => $superadmin->email,
+                'ten' => $superadmin->fullname,
+            ];
+            return response()->json(['super_admin' => $mappedAdmin], 200);
+        }
+    }
+    public function loginAdmin(Request $request)
+    {
+        $credentials = $request->only('username', 'password');
+        $user = Admin::where('username', $credentials['username'])->first();
+
+        if ($user && Hash::check($credentials['password'], $user->password)) {
+            $token = $user->createToken('authToken', ['*'], now()->addMinutes(120))->plainTextToken;
+            // dd($token);
+            $role = $user->role;
+            return response()->json([
+                'token' => $token,
+                'role' => $role,
+            ], 200);
+        } else {
+            return response()->json(['error' => 'Thông tin đăng nhập không chính xác'], 401);
         }
     }
 }
