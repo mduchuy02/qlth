@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DiemDanhController;
 use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::post('/validate-token', [LoginController::class, 'validateToken']);
+Route::post('/loginAdmin', [LoginController::class, 'loginAdmin'])->name('loginAdmin');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->group(function () {
     //Tai khoan giao vien
@@ -64,5 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
     Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
+
     Route::post('/edit', [SinhVienController::class, 'store']);
+
+    Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
+
 });

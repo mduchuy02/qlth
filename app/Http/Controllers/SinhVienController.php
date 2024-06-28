@@ -102,7 +102,8 @@ class SinhVienController extends Controller
                         'ma_tkb' => $ma_tkb,
                         'ma_sv' => $ma_sv,
                         'ngay_hoc' => $ngay_dd,
-                        'diem_danh1' => $formattedStartScan
+                        'diem_danh1' => $formattedStartScan,
+                        'ghi_chu' => ""
                     ]);
                     return response()->json([
                         'message' => 'Điểm danh thành công'
