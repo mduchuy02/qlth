@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'],
 
-    'allowed_origins' => ['http://localhost:5173'],
+
+    'allowed_origins' => [
+        ''
+    ],
 
     'allowed_headers' => ['*'],
 

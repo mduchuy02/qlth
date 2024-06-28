@@ -118,4 +118,34 @@ class SinhVienController extends Controller
             ], 400);
         }
     }
+
+    //Sửa thông tin sinh viên
+    public function store(Request $request)
+    {
+        $ma_sv = $request->ma_sv;
+        $validated = $request->validate(
+            [
+                "email" => "required|email|unique:users,email,$ma_sv",
+                "sdt" => "required|numeric|digits_between:10,11"
+            ],
+            [
+                "email.required" => "Nhập email",
+                'email.email' => 'Email không hợp lệ',
+                'email.max' => 'Email không được vượt quá 50 ký tự',
+                'email.unique' => 'Email đã tồn tại',
+
+                "sdt.required" => "Nhập số điện thoại",
+                "sdt.numeric" => "Số điện thoại chỉ chứa số",
+                "sdt.digits_between" => "Số điện thoại không hợp lệ"
+            ]
+        );
+        $update = SinhVien::where('ma_sv', $ma_sv)
+            ->update([
+                'email' => $request->email,
+                'sdt' => $request->sdt
+            ]);
+        if ($update) {
+            return response()->json(['message' => 'Cập nhật thông tin sinh viên thành công!'], 200);
+        }
+    }
 }
