@@ -7,8 +7,10 @@ use App\Models\LichHoc;
 use App\Models\QrCode;
 use App\Models\SinhVien;
 use App\Models\Tkb;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 use function PHPUnit\Framework\isNull;
@@ -125,8 +127,9 @@ class SinhVienController extends Controller
         $ma_sv = $request->ma_sv;
         $validated = $request->validate(
             [
-                "email" => "required|email|unique:users,email,$ma_sv",
-                "sdt" => "required|numeric|digits_between:10,11"
+                "email" => "required|email|unique:sinh_vien,email,$ma_sv,ma_sv",
+                "sdt" => "required|numeric|digits_between:10,11|unique:sinh_vien,sdt,$ma_sv,ma_sv",
+                'password' => 'sometimes|nullable|string|min:8|confirmed'
             ],
             [
                 "email.required" => "Nhập email",
@@ -136,7 +139,10 @@ class SinhVienController extends Controller
 
                 "sdt.required" => "Nhập số điện thoại",
                 "sdt.numeric" => "Số điện thoại chỉ chứa số",
-                "sdt.digits_between" => "Số điện thoại không hợp lệ"
+                "sdt.digits_between" => "Số điện thoại không hợp lệ",
+                "sdt.unique" => 'Số điện thoại đã tồn tại',
+
+                'password.confirmed' => 'Mật khẩu xác nhận không trùng khớp',
             ]
         );
         $update = SinhVien::where('ma_sv', $ma_sv)
@@ -144,8 +150,21 @@ class SinhVienController extends Controller
                 'email' => $request->email,
                 'sdt' => $request->sdt
             ]);
-        if ($update) {
+        if ($request->filled('password')) {
+            $taikhoansv = User::where('username', $ma_sv)
+                ->update([
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                ]);
+        } else {
+            $taikhoansv = User::where('username', $ma_sv)
+                ->update([
+                    'email' => $request->email,
+                ]);
+        }
+        if ($update && $taikhoansv) {
             return response()->json(['message' => 'Cập nhật thông tin sinh viên thành công!'], 200);
         }
+        
     }
 }
