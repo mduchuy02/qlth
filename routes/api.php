@@ -64,4 +64,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
     Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
+    Route::post('/edit', [SinhVienController::class, 'store']);
 });
