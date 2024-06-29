@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DiemDanhController;
+use App\Http\Controllers\GiaoVienController;
 use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
 use App\Http\Controllers\LoginController;
@@ -64,13 +65,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lichgd/{ma_gv}', [LichDayController::class, 'getLichGD']);
     //test
     Route::get('/getUser/{ma_gv}', [UserController::class, 'show']);
+    //PDT
+    Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
+    Route::post('/editProfileAdmin', [AdminController::class, 'store']);
+    //Giao Vien
+    Route::get('/profileGiaoVien', [GiaoVienController::class, 'profile']);
+    Route::post('/editProfileGiaoVien', [GiaoVienController::class, 'store']);
     //Sinh Vien
     Route::get('/thoi-khoa-bieu', [TKBController::class, 'getTimeTable']);
     Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
     Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
-
     Route::post('/edit', [SinhVienController::class, 'store']);
 
+
     Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
+
 });

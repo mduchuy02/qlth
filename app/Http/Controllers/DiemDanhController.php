@@ -40,19 +40,42 @@ class DiemDanhController extends Controller
         $tkbRecords = Tkb::where('ma_gd', $request->ma_gd)
             ->where('ngay_hoc', $request->ngay_hoc)
             ->get();
-        $maGdList = $tkbRecords->pluck('ma_gd');
-        $sinhVienList = SinhVien::whereHas('lichHocs', function ($query) use ($maGdList) {
-            $query->whereIn('ma_gd', $maGdList);
+        $tkb = Tkb::where('ma_gd', $request->ma_gd)
+            ->where('ngay_hoc', $request->ngay_hoc)
+            ->select("ma_tkb")
+            ->first();
+        $maGd = $tkbRecords->pluck('ma_gd');
+        $sinhVienList = SinhVien::whereHas('lichHocs', function ($query) use ($maGd) {
+            $query->whereIn('ma_gd', $maGd);
         })->get();
         if ($sinhVienList->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy danh sách sinh viên phù hợp.'], 404);
         }
-        $sinhVienList = $sinhVienList->map(function ($sinhVien, $index) {
+        $sinhVienListNew = $sinhVienList->map(function ($sinhVien, $index) use ($tkb) {
+            $diemdanh1 = DiemDanh::where('ma_sv', $sinhVien->ma_sv)
+                ->where('ma_tkb', $tkb['ma_tkb'])
+                ->select('diem_danh1')
+                ->first();
+            $diemdanh2 = DiemDanh::where('ma_sv', $sinhVien->ma_sv)
+                ->where('ma_tkb', $tkb['ma_tkb'])
+                ->select('diem_danh2')
+                ->first();
+                // if(is_null($diemdanh1->diem_danh1)) {
+                //     dd($sinhVien->diemdanh1 = false);
+                // }else {
+                //     $sinhVien->diemdanh1 = true;
+                // }
+                // if(is_null($diemdanh2->diem_danh2)) {
+                //     $sinhVien->diemdanh2 = false;
+                // }else {
+                // $sinhVien->diemdanh2 = true;
+                // }
+            $sinhVien->diemdanh1 = !is_null($diemdanh1?->diem_danh1);
+            $sinhVien->diemdanh2 = !is_null($diemdanh2?->diem_danh2);
             $sinhVien->key = $index + 1; // Adding 1 to start keys from 1 instead of 0
             return $sinhVien;
         });
-
-        return response()->json($sinhVienList);
+        return response()->json($sinhVienListNew);
     }
 
     public function getIdTKB(Request $request)
@@ -76,7 +99,7 @@ class DiemDanhController extends Controller
         try {
             // Thực hiện insert dữ liệu vào bảng qrcode
             $code = $request->code;
-            $hyphenPos  = strpos($code, '-');
+            $hyphenPos = strpos($code, '-');
             $endTime = substr($code, strpos($code, '-', $hyphenPos + 1) + 1);
             $ma_tkb = substr($code, 0, $hyphenPos);
             $fromatCarbon = Carbon::parse($endTime);

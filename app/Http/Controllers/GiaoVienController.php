@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
-use Illuminate\Http\Request;
+use App\Models\GiaoVien;
+use App\Models\TaiKhoanGV;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
-class AdminController extends Controller
+class GiaoVienController extends Controller
 {
-    public function getProfile()
+    public function profile()
     {
         try {
-            $profile = Auth::user()->username;
-            if (!$profile) {
+            $ma_gv = Auth::user()->username;
+            if (!$ma_gv) {
                 return response()->json(['error' => 'Unauthenticated.'], 401);
             }
-            $admin = Admin::where('username',$profile)->select("username","email","full_name","role")->firstOrFail();
-            return response()->json($admin);
+            return response()->json(GiaoVien::findOrFail($ma_gv));
         } catch (\Exception $e) {
             return response()->json(['error' => 'Something went wrong'], 500);
         }
@@ -25,10 +26,11 @@ class AdminController extends Controller
 
     public function store(Request $request)
     {
-        $username = $request->username;
+        $ma_gv = $request->ma_gv;
         $request->validate(
             [
-                "email" => "required|email|unique:admin,email,$username,username",
+                "email" => "required|email|unique:giao_vien,email,$ma_gv,ma_gv",
+                "sdt" => "required|numeric|digits_between:10,11,|unique:giao_vien,sdt,$ma_gv,ma_gv",
                 'password' => 'sometimes|nullable|string|min:8|confirmed'
             ],
             [
@@ -37,29 +39,38 @@ class AdminController extends Controller
                 'email.max' => 'Email không được vượt quá 50 ký tự',
                 'email.unique' => 'Email đã tồn tại',
 
+                "sdt.required" => "Nhập số điện thoại",
+                "sdt.numeric" => "Số điện thoại chỉ chứa số",
+                "sdt.digits_between" => "Số điện thoại không hợp lệ",
+                "sdt.unique" => 'Số điện thoại đã tồn tại',
+
                 'password.confirmed' => 'Mật khẩu xác nhận không trùng khớp',
             ]
         );
+        $update = GiaoVien::where('ma_gv', $ma_gv)
+            ->update([
+                'email' => $request->email,
+                'sdt' => $request->sdt
+            ]);
         if ($request->filled('password')) {
-            $update = Admin::where('username', $username)
+            $taikhoangv = User::where('username', $ma_gv)
                 ->update([
                     'email' => $request->email,
-                    'full_name' => $request->full_name,
                     'password' => Hash::make($request->password),
                 ]);
-            if ($update) {
+            if ($update && $taikhoangv) {
                 return response()->json(['message' => 'Cập nhật thông tin giáo viên thành công!'], 200);
             }
         } else {
-            $update = Admin::where('username', $username)
+            $taikhoangv = User::where('username', $ma_gv)
                 ->update([
-                    'email' => $request->email,
-                    'full_name' => $request->full_name
+                    'email' => $request->email
                 ]);
-            if ($update) {
+            if ($update && $taikhoangv) {
                 return response()->json(['message' => 'Cập nhật thông tin giáo viên thành công!'], 200);
             }
         }
-        
+
+
     }
 }
