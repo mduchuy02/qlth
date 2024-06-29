@@ -8,6 +8,7 @@ use App\Models\LichHoc;
 use App\Models\QrCode;
 use App\Models\SinhVien;
 use App\Models\Tkb;
+use Auth;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -60,16 +61,6 @@ class DiemDanhController extends Controller
                 ->where('ma_tkb', $tkb['ma_tkb'])
                 ->select('diem_danh2')
                 ->first();
-                // if(is_null($diemdanh1->diem_danh1)) {
-                //     dd($sinhVien->diemdanh1 = false);
-                // }else {
-                //     $sinhVien->diemdanh1 = true;
-                // }
-                // if(is_null($diemdanh2->diem_danh2)) {
-                //     $sinhVien->diemdanh2 = false;
-                // }else {
-                // $sinhVien->diemdanh2 = true;
-                // }
             $sinhVien->diemdanh1 = !is_null($diemdanh1?->diem_danh1);
             $sinhVien->diemdanh2 = !is_null($diemdanh2?->diem_danh2);
             $sinhVien->key = $index + 1; // Adding 1 to start keys from 1 instead of 0
@@ -120,7 +111,7 @@ class DiemDanhController extends Controller
     public function diemDanhSinhVien(Request $request)
     {
         $students = $request->input('students', []);
-        $currentDate = now()->format('Y-m-d');
+        $currentDate = now()->format('Y-m-d H:i:s');
 
         try {
             foreach ($students as $student) {
@@ -250,7 +241,7 @@ class DiemDanhController extends Controller
                         'ma_tkb' => $tkb->ma_tkb,
                         'ma_sv' => $ma_sv,
                         'ngay_hoc' => $day,
-                        'diem_danh1' => $attendaceTime
+                        'diem_danh1' => $attendaceTime, 
                     ]);
                     return response()->json([
                         'message' => "Điểm danh thành công"
@@ -260,7 +251,7 @@ class DiemDanhController extends Controller
                         'ma_tkb' => $tkb->ma_tkb,
                         'ma_sv' => $ma_sv,
                         'ngay_hoc' => $day,
-                        'diem_danh2' => $attendaceTime
+                        'diem_danh2' => $attendaceTime,
                     ]);
                     return response()->json([
                         'message' => "Điểm danh thành công"
@@ -271,6 +262,37 @@ class DiemDanhController extends Controller
             return response()->json([
                 'message' => "Sinh Viên không có lịch học môn này"
             ], 400);
+        }
+    }
+
+    public function getDanhSachDiemDanh($ma_gd)
+    {
+        try{
+            $ma_gv = Auth::user()->username;
+            $tkb = Tkb::where('ma_gd', $ma_gd)
+            ->pluck('ma_tkb');
+            $diemdanh = DiemDanh::whereIn('ma_tkb', $tkb)
+                ->select('ma_dd','ma_sv')
+                ->get();
+            $sinhviens = LichHoc::where('ma_gd', $ma_gd)
+            ->select('ma_sv')
+            ->get();
+            $sinhviens->map(function ($sinhvien) use ($tkb) {
+                $sinhvien->sbh = $tkb->count();
+                $sinhvien->sbdd = DiemDanh::whereIn('ma_tkb', $tkb)
+                    ->where('ma_sv', $sinhvien->ma_sv)
+                    ->count();
+                $sinhvien->ten_sv = SinhVien::where('ma_sv', $sinhvien->ma_sv)
+                    ->select('ten_sv')
+                    ->get();
+                $sinhvien->sbv = $sinhvien->sbh - $sinhvien->sbdd;
+                $sinhvien->ten_sv = $sinhvien['ten_sv'][0]['ten_sv'];
+                return $sinhvien;
+            });
+
+            return response()->json($sinhviens);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi khi lấy danh sách sinh viên: ' . $e->getMessage()], 500);
         }
     }
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\LichDay;
 use Illuminate\Http\Request;
+use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class LichDayController extends Controller
 {
@@ -42,5 +44,24 @@ class LichDayController extends Controller
             )
             ->get();
         return response()->json($lichGD);
+    }
+    public function getThoiKhoaBieu()
+    {
+        try {
+            $ma_gv = Auth::user()->username;
+            $lichDays = LichDay::join('mon_hoc','mon_hoc.ma_mh','lich_gd.ma_mh')
+            ->where('ma_gv', $ma_gv)
+            ->select('ma_gd','ten_mh','hoc_ky','nmh')
+            ->get();
+            $lichDays = $lichDays->map(function ($lichDay) {
+                $hocKy = str_split($lichDay->hoc_ky);
+                $lichDay->hoc_ky = "Học kỳ " . $hocKy[0] . " năm học 20" . $hocKy[1] . $hocKy[2] . "-20" . $hocKy[1] . $hocKy[2] + 1;
+                return $lichDay;
+            });
+            return response()->json($lichDays);
+        } catch (Exception $e) {
+            // return response()->json(['error' => 'Something went wrong'], 500);
+            return response($e);
+        }
     }
 }

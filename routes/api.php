@@ -56,8 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/saveQr', [DiemDanhController::class, 'saveQr']);
     Route::post('/diemDanhSinhVien', [DiemDanhController::class, 'diemDanhSinhVien']);
     Route::post('/quet-ma-sinh-vien', [DiemDanhController::class, 'quetMaSinhVien']);
-
-
+    Route::get('/getDanhSachDiemDanh/{ma_gd}', [DiemDanhController::class, 'getDanhSachDiemDanh']);
     //else
     Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
@@ -70,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/editProfileAdmin', [AdminController::class, 'store']);
     //Giao Vien
     Route::get('/profileGiaoVien', [GiaoVienController::class, 'profile']);
+    Route::get('/tkbGiaoVien', [LichDayController::class, 'getThoiKhoaBieu']);
     Route::post('/editProfileGiaoVien', [GiaoVienController::class, 'store']);
     //Sinh Vien
     Route::get('/thoi-khoa-bieu', [TKBController::class, 'getTimeTable']);
