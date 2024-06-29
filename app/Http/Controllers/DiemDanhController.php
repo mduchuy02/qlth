@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DiemDanh;
 use App\Models\LichDay;
+use App\Models\LichHoc;
 use App\Models\QrCode;
 use App\Models\SinhVien;
 use App\Models\Tkb;
@@ -181,5 +182,95 @@ class DiemDanhController extends Controller
         }
 
         return response()->json(['message' => 'Điểm danh thành công!'], 200);
+    }
+
+    public function quetMaSinhVien(Request $request)
+    {
+        $code = $request->code;
+        $attendace = $request->attendace;
+        $attendaceTime = Carbon::parse($request->attendaceTime)->format('Y-m-d H:i:s');
+        $ma_gd = $request->ma_gd;
+        $day = Carbon::parse($request->day)->format('Y-m-d');
+        $ma_sv = substr($code, 0, strpos($code, '-'));
+
+        // kiểm tra qrcode đúng định dạng không
+        if (!preg_match('/^DH\d{8}-[\p{L}\s]+-D\d{2}_TH\d{2}$/u', $code)) {
+            return response()->json([
+                'message' => "Mã QR không hợp lệ"
+            ], 400);
+        }
+
+        $tkb = Tkb::where('ma_gd', $ma_gd)
+            ->where('ngay_hoc', $day)
+            ->first();
+
+        // kiểm tra xem  sinh viên có lịch học không
+        $lich_hoc = LichHoc::where('ma_sv', $ma_sv)
+            ->where('ma_gd', $ma_gd)
+            ->exists();
+        if ($lich_hoc) {
+            $diem_danh = DiemDanh::where('ma_tkb', $tkb->ma_tkb)
+                ->where('ma_sv', $ma_sv)
+                ->where('ngay_hoc', $day)
+                ->first();
+            // Kiểm tra sinh viên đã có bản điểm danh hay chưa
+            if ($diem_danh) {
+                if ($attendace == 1) {
+                    if (is_null($diem_danh->diem_danh1)) {
+                        DiemDanh::where('ma_dd', $diem_danh->ma_dd)
+                            ->update([
+                                'diem_danh1' => $attendaceTime
+                            ]);
+                        return response()->json([
+                            'message' => "Điểm danh thành công"
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'message' => "Sinh Viên đã điểm danh"
+                        ], 400);
+                    }
+                } else {
+                    if (is_null($diem_danh->diem_danh2)) {
+                        DiemDanh::where('ma_dd', $diem_danh->ma_dd)
+                            ->update([
+                                'diem_danh2' => $attendaceTime
+                            ]);
+                        return response()->json([
+                            'message' => "Điểm danh thành công"
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'message' => "Sinh Viên đã điểm danh"
+                        ], 400);
+                    }
+                }
+            } else {
+                if ($attendace == 1) {
+                    DiemDanh::create([
+                        'ma_tkb' => $tkb->ma_tkb,
+                        'ma_sv' => $ma_sv,
+                        'ngay_hoc' => $day,
+                        'diem_danh1' => $attendaceTime
+                    ]);
+                    return response()->json([
+                        'message' => "Điểm danh thành công"
+                    ], 200);
+                } else {
+                    DiemDanh::create([
+                        'ma_tkb' => $tkb->ma_tkb,
+                        'ma_sv' => $ma_sv,
+                        'ngay_hoc' => $day,
+                        'diem_danh2' => $attendaceTime
+                    ]);
+                    return response()->json([
+                        'message' => "Điểm danh thành công"
+                    ], 200);
+                }
+            }
+        } else {
+            return response()->json([
+                'message' => "Sinh Viên không có lịch học môn này"
+            ], 400);
+        }
     }
 }
