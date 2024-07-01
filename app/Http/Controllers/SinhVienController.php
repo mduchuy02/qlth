@@ -62,6 +62,7 @@ class SinhVienController extends Controller
 
         // lấy ra ma_gd tương ứng với tkb
         $maGD = Tkb::where('ma_tkb', $ma_tkb)->pluck('ma_gd')->first();
+        $ngay_hoc = Tkb::where('ma_tkb', $ma_tkb)->pluck('ngay_hoc')->first();
         // kiểm tra xem sinh viên có ma_gd đó không trong table lich_hoc
         $lich_hoc =
             LichHoc::where('ma_sv', $ma_sv)
@@ -76,7 +77,7 @@ class SinhVienController extends Controller
             if ($tgDiemDanh->lessThan($tgHetHan)) {
                 $checkTonTai = DiemDanh::where('ma_tkb', $ma_tkb)
                     ->where('ma_sv', $ma_sv)
-                    ->where('ngay_hoc', $ngay_dd)
+                    ->where('ngay_hoc', $ngay_hoc)
                     ->first();
                 // Nếu sinh viên tồn tại ngày điểm danh thì update
                 if ($checkTonTai) {
@@ -103,7 +104,7 @@ class SinhVienController extends Controller
                     DiemDanh::create([
                         'ma_tkb' => $ma_tkb,
                         'ma_sv' => $ma_sv,
-                        'ngay_hoc' => $ngay_dd,
+                        'ngay_hoc' => $ngay_hoc,
                         'diem_danh1' => $formattedStartScan,
                         'ghi_chu' => ""
                     ]);
