@@ -75,7 +75,7 @@ class LoginController extends Controller
                 'ma_lop' => $sinhvien->ma_lop
             ];
             return response()->json(['sinhvien' => $mappedSinhVien], 200);
-        } elseif($user->role == 'super_admin') {
+        } elseif ($user->role == 'super_admin') {
             $superadmin = Admin::findOrFail($user->username);
             $mappedAdmin = [
                 'email' => $superadmin->email,

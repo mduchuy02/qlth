@@ -7,6 +7,7 @@ use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LopController;
+use App\Http\Controllers\PDTController;
 use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\TaiKhoanGVController;
 use App\Http\Controllers\TaiKhoanSVController;
@@ -78,7 +79,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
     Route::post('/edit', [SinhVienController::class, 'store']);
 
-
     Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
 
+
+    //PDT
+    Route::get('/get-department-class', [PDTController::class, 'getListDepartmentClass']);
+    Route::get('/get-department-class/{id}', [PDTController::class, 'getClass']);
+    Route::post('/get-list-student', [PDTController::class, 'getListStudent']);
+    Route::post('/export-data-students', [PDTController::class, 'exportData']);
+    Route::post('/import-data', [PDTController::class, 'importData']);
 });

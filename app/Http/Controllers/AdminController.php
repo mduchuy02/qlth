@@ -16,7 +16,7 @@ class AdminController extends Controller
             if (!$profile) {
                 return response()->json(['error' => 'Unauthenticated.'], 401);
             }
-            $admin = Admin::where('username',$profile)->select("username","email","full_name","role")->firstOrFail();
+            $admin = Admin::where('username', $profile)->select("username", "email", "full_name", "role")->firstOrFail();
             return response()->json($admin);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Something went wrong'], 500);
@@ -60,6 +60,5 @@ class AdminController extends Controller
                 return response()->json(['message' => 'Cập nhật thông tin giáo viên thành công!'], 200);
             }
         }
-        
     }
 }

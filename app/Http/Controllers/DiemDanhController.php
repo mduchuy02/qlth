@@ -61,6 +61,18 @@ class DiemDanhController extends Controller
                 ->where('ma_tkb', $tkb['ma_tkb'])
                 ->select('diem_danh2')
                 ->first();
+
+            // if(is_null($diemdanh1->diem_danh1)) {
+            //     dd($sinhVien->diemdanh1 = false);
+            // }else {
+            //     $sinhVien->diemdanh1 = true;
+            // }
+            // if(is_null($diemdanh2->diem_danh2)) {
+            //     $sinhVien->diemdanh2 = false;
+            // }else {
+            // $sinhVien->diemdanh2 = true;
+            // }
+
             $sinhVien->diemdanh1 = !is_null($diemdanh1?->diem_danh1);
             $sinhVien->diemdanh2 = !is_null($diemdanh2?->diem_danh2);
             $sinhVien->key = $index + 1; // Adding 1 to start keys from 1 instead of 0
