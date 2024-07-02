@@ -167,15 +167,15 @@ class DiemDanhController extends Controller
                             ]);
                         }
                     } else if ($student['khong_phep']) {
-                        if (!$existingRecord) {
-                            DiemDanh::create([
-                                "ma_tkb" => $tkb->ma_tkb,
-                                "ma_sv" => $student["ma_sv"], // Cung cấp giá trị ma_sv
-                                "ngay_hoc" => $student["ngay_diem_danh"],
-                                "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
-                            ]);
-                        } else {
-                        }
+                        // if (!$existingRecord) {
+                        //     DiemDanh::create([
+                        //         "ma_tkb" => $tkb->ma_tkb,
+                        //         "ma_sv" => $student["ma_sv"], // Cung cấp giá trị ma_sv
+                        //         "ngay_hoc" => $student["ngay_diem_danh"],
+                        //         "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
+                        //     ]);
+                        // } else {
+                        // }
                     }
                 }
             }
