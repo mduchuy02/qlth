@@ -166,6 +166,5 @@ class SinhVienController extends Controller
         if ($update && $taikhoansv) {
             return response()->json(['message' => 'Cập nhật thông tin sinh viên thành công!'], 200);
         }
-        
     }
 }

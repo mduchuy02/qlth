@@ -88,4 +88,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/get-list-student', [PDTController::class, 'getListStudent']);
     Route::post('/export-data-students', [PDTController::class, 'exportData']);
     Route::post('/import-data', [PDTController::class, 'importData']);
+    Route::get('/list-department', [PDTController::class, 'getListDepartment']);
+    Route::get('/list-department/{ma_khoa}', [PDTController::class, 'getDepartment']);
+    Route::put('/list-department/save/{ma_khoa}', [PDTController::class, 'saveDepartment']);
+    Route::post('/create-department', [PDTController::class, 'createDepartment']);
 });
