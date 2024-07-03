@@ -253,7 +253,7 @@ class DiemDanhController extends Controller
                         'ma_tkb' => $tkb->ma_tkb,
                         'ma_sv' => $ma_sv,
                         'ngay_hoc' => $day,
-                        'diem_danh1' => $attendaceTime, 
+                        'diem_danh1' => $attendaceTime,
                     ]);
                     return response()->json([
                         'message' => "Điểm danh thành công"
@@ -279,16 +279,16 @@ class DiemDanhController extends Controller
 
     public function getDanhSachDiemDanh($ma_gd)
     {
-        try{
+        try {
             $ma_gv = Auth::user()->username;
             $tkb = Tkb::where('ma_gd', $ma_gd)
-            ->pluck('ma_tkb');
+                ->pluck('ma_tkb');
             $diemdanh = DiemDanh::whereIn('ma_tkb', $tkb)
-                ->select('ma_dd','ma_sv')
+                ->select('ma_dd', 'ma_sv')
                 ->get();
             $sinhviens = LichHoc::where('ma_gd', $ma_gd)
-            ->select('ma_sv')
-            ->get();
+                ->select('ma_sv')
+                ->get();
             $sinhviens->map(function ($sinhvien) use ($tkb) {
                 $sinhvien->sbh = $tkb->count();
                 $sinhvien->sbdd = DiemDanh::whereIn('ma_tkb', $tkb)

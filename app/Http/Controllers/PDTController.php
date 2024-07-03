@@ -9,6 +9,7 @@ use App\Models\Khoa;
 use App\Models\Lop;
 use App\Models\SinhVien;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -99,5 +100,85 @@ class PDTController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to import: ' . $e->getMessage()], 500);
         }
+    }
+
+    // Department
+    public function getListDepartment(Request $request)
+    {
+        $ten_khoa = $request->ten_khoa;
+
+        $query = Khoa::query();
+        if (!empty($ten_khoa)) {
+            $query->where('ten_khoa', 'like', '%' . $ten_khoa . '%')
+                ->orWhere('ma_khoa', 'like', '%' . $ten_khoa . '%');
+        }
+        $departments = $query->orderBy('ten_khoa')->get();
+
+        $newListDepartments = $departments->map(function ($department, $index) {
+            $department->stt = $index + 1;
+            return $department;
+        });
+
+        return response()->json($newListDepartments);
+    }
+    // get department(ma_khoa)
+    public function getDepartment($ma_khoa)
+    {
+
+        $department = Khoa::where('ma_khoa', $ma_khoa)
+            ->first();
+        return response()->json($department);
+    }
+
+    // save
+    public function saveDepartment(Request $request, $ma_khoa)
+    {
+
+        try {
+            $ten_khoa = $request->ten_khoa;
+            $result = Khoa::where('ma_khoa', $ma_khoa)
+                ->update([
+                    'ma_khoa' => $ma_khoa,
+                    'ten_khoa' => $ten_khoa,
+                ]);
+            if ($result) {
+                return response()->json([
+                    'message' => 'Cập nhật thành công'
+                ], 200);
+            }
+            return response()->json([
+                'error' => 'Cập nhật thất bại'
+            ], 400);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function createDepartment(Request $request)
+    {
+        $ma_khoa = $request->ma_khoa;
+        $ten_khoa = $request->ten_khoa;
+
+        $validatedData = $request->validate([
+            'ma_khoa' => 'required|unique:khoa,ma_khoa',
+            'ten_khoa' => 'required',
+        ], [
+            'ma_khoa.required' => 'Mã khoa là bắt buộc',
+            'ma_khoa.unique' => 'Mã khoa đã tồn tại',
+            'ten_khoa.required' => 'Tên khoa là bắt buộc',
+        ]);
+        $department = Khoa::create([
+            'ma_khoa' => $ma_khoa,
+            'ten_khoa' => $ten_khoa
+        ]);
+        if ($department) {
+            return response()->json([
+                'message' => "Thêm thành công",
+            ], 200);
+        }
+        return response()->json([
+            'error' => "Thêm không thành công",
+        ], 400);
     }
 }

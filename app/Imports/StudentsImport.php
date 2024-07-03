@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\KetQua;
+use App\Models\SinhVien;
 use App\Models\Student;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -16,14 +17,17 @@ class StudentsImport implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
-        return new KetQua([
+        return new SinhVien([
 
             "ma_sv" => $row['ma_sv'],
-            "ma_mh" => $row['ma_mh'],
-            "diem_qt" => $row['diem_qt'],
-            "diem_thi1" => $row['diem_thi1'],
-            "diem_thi2" => $row['diem_thi2'],
-            "diem_tb" => $row['diem_tb'],
+            "ten_sv" => $row['ten_sv'],
+            "ngay_sinh" => $row['ngay_sinh'],
+            "phai" => $row['phai'],
+            "dia_chi" => $row['dia_chi'],
+            "sdt" => $row['sdt'],
+            "email" => $row['email'],
+            "anh_qr" => $row['anh_qr'],
+            "ma_lop" => $row['ma_lop'],
         ]);
     }
 }
