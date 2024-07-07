@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SinhVien;
 use App\Models\TaiKhoanSV;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -86,7 +87,7 @@ class TaiKhoanSVController extends Controller
             'ngay_sinh' => 'required|date',
             'phai' => 'required|in:1,0',
             'dia_chi' => 'required|string|max:300',
-            'sdt' => 'required|string|max:11',
+            'sdt' => 'required|string|max:11|regex:/^[0-9]+$/',
             'email' => 'required|email|max:50|unique:sinh_vien',
             'password' => 'required|confirmed',
             'ma_lop' => 'required|exists:lop,ma_lop', // Thêm validation cho ma_lop
@@ -113,6 +114,7 @@ class TaiKhoanSVController extends Controller
             'sdt.required' => 'Nhập số điện thoại',
             'sdt.string' => 'Số điện thoại phải là chuỗi',
             'sdt.max' => 'Số điện thoại không được vượt quá 11 ký tự',
+            'sdt.regex' => "số điện thoại phải là số",
 
             'email.required' => 'Nhập email',
             'email.email' => 'Email không hợp lệ',
@@ -125,28 +127,33 @@ class TaiKhoanSVController extends Controller
             'ma_lop.required' => 'Chọn mã lớp',
             'ma_lop.exists' => 'Mã lớp không hợp lệ',
         ]);
+        try {
+            // Tạo mới sinh viên và lưu vào cơ sở dữ liệu
+            $sinh_vien = SinhVien::create([
+                'ma_sv' => $request['ma_sv'],
+                'ten_sv' => $request['ten_sv'],
+                'ngay_sinh' => $request['ngay_sinh'],
+                'phai' => $request['phai'],
+                'dia_chi' => $request['dia_chi'],
+                'sdt' => $request['sdt'],
+                'email' => $request['email'],
+                'ma_lop' => $request['ma_lop'], // Thêm ma_lop vào để lưu vào cơ sở dữ liệu
+                'anh_qr' => $request['ma_sv'] . 'png',
+            ]);
 
-        // Tạo mới sinh viên và lưu vào cơ sở dữ liệu
-        $sinh_vien = SinhVien::create([
-            'ma_sv' => $request['ma_sv'],
-            'ten_sv' => $request['ten_sv'],
-            'ngay_sinh' => $request['ngay_sinh'],
-            'phai' => $request['phai'],
-            'dia_chi' => $request['dia_chi'],
-            'sdt' => $request['sdt'],
-            'email' => $request['email'],
-            'ma_lop' => $request['ma_lop'], // Thêm ma_lop vào để lưu vào cơ sở dữ liệu
-            'anh_qr' => $request['ma_sv'] . 'png',
-        ]);
-
-        // Tạo mới tài khoản sinh viên và lưu vào cơ sở dữ liệu
-        $tai_khoan_sv = User::create([
-            'ma_sv' => $request['ma_sv'],
-            'username' => $request['ma_sv'],
-            'password' => Hash::make($request['password']),
-            'email' => $request['email'],
-            'role' => 'student'
-        ]);
-        return response()->json(['message' => 'Tạo tài khoản sinh viên thành công!'], 200);
+            // Tạo mới tài khoản sinh viên và lưu vào cơ sở dữ liệu
+            $tai_khoan_sv = User::create([
+                'ma_sv' => $request['ma_sv'],
+                'username' => $request['ma_sv'],
+                'password' => Hash::make($request['password']),
+                'email' => $request['email'],
+                'role' => 'student'
+            ]);
+            return response()->json(['message' => 'Tạo tài khoản sinh viên thành công!'], 200);
+        } catch (Exception $ex) {
+            return response()->json([
+                'error' => $ex->getMessage(),
+            ], 500);
+        }
     }
 }

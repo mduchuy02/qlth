@@ -49,10 +49,10 @@ class LichDayController extends Controller
     {
         try {
             $ma_gv = Auth::user()->username;
-            $lichDays = LichDay::join('mon_hoc','mon_hoc.ma_mh','lich_gd.ma_mh')
-            ->where('ma_gv', $ma_gv)
-            ->select('ma_gd','ten_mh','hoc_ky','nmh')
-            ->get();
+            $lichDays = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')
+                ->where('ma_gv', $ma_gv)
+                ->select('ma_gd', 'ten_mh', 'hoc_ky', 'nmh')
+                ->get();
             $lichDays = $lichDays->map(function ($lichDay) {
                 $hocKy = str_split($lichDay->hoc_ky);
                 $lichDay->hoc_ky = "Học kỳ " . $hocKy[0] . " năm học 20" . $hocKy[1] . $hocKy[2] . "-20" . $hocKy[1] . $hocKy[2] + 1;

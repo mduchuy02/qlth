@@ -11,6 +11,7 @@ use App\Models\SinhVien;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PDTController extends Controller
@@ -90,17 +91,37 @@ class PDTController extends Controller
         return Excel::download(new StudentsExport($data), 'students.xlsx');
     }
 
+    //import data
     public function importData(Request $request)
     {
         $file = $request->file('file');
+
         try {
+            // Đọc nội dung file để kiểm tra dữ liệu
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+            $hasValidRow = false;
+            foreach ($rows as $row) {
+
+                if (!empty($row[0])) {
+                    $hasValidRow = true;
+                    break;
+                }
+            }
+
+            if (!$hasValidRow) {
+                return response()->json(['message' => 'File không có dòng dữ liệu hợp lệ'], 400);
+            }
+
             Excel::import(new StudentsImport(), $file);
 
-            return response()->json(['message' => 'Imported successfully'], 200);
+            return response()->json(['message' => 'Import Thành công'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to import: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
         }
     }
+
 
     // Department
     public function getListDepartment(Request $request)
@@ -180,5 +201,35 @@ class PDTController extends Controller
         return response()->json([
             'error' => "Thêm không thành công",
         ], 400);
+    }
+
+    public function deleteDepartment($ma_khoa)
+    {
+        try {
+            $deleteDepartment = Khoa::where('ma_khoa', $ma_khoa)
+                ->delete();
+            if ($deleteDepartment) {
+                return response()->json([
+                    'message' => "Xóa thành công",
+                ], 200);
+            }
+            return response()->json([
+                'error' => "Không thể xóa Vui lòng thử lại",
+            ], 400);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => "Không thể xóa Vui lòng thử lại"
+            ], 400);
+        }
+    }
+
+    public function getListClass()
+    {
+        $listClass = Lop::select('ma_lop', 'ten_lop')->get();
+        if ($listClass) {
+            return response()->json([
+                'listClass' => $listClass,
+            ], 200);
+        }
     }
 }
