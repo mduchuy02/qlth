@@ -49,7 +49,7 @@ class TKBController extends Controller
                     ->join('giao_vien', 'giao_vien.ma_gv', 'lich_gd.ma_gv')
                     ->where('giao_vien.ma_gv', $ma)
                     ->whereBetween('ngay_hoc', [$dateStart, $dateEnd])
-                    ->select('mon_hoc.ma_mh', 'ten_mh', 'giao_vien.ma_gv', 'ten_gv', 'lich_gd.phong_hoc', 'ngay_hoc', 'lich_gd.st_bd', 'lich_gd.st_kt', 'ghi_chu')
+                    ->select('mon_hoc.ma_mh', 'ten_mh', 'giao_vien.ma_gv', 'ten_gv', 'lich_gd.phong_hoc', 'ngay_hoc', 'lich_gd.st_bd', 'lich_gd.st_kt', 'ghi_chu','nmh')
                     ->get();
                 $tkbweek->map(function ($item) {
                     $item->dayOfWeek = Carbon::parse($item->ngay_hoc)->format('l');
