@@ -41,6 +41,7 @@ class LichDayController extends Controller
                 'lich_gd.phong_hoc as Phong',
                 'lich_gd.ngay_bd as NgayBD',
                 'lich_gd.ngay_kt as NgayKT',
+                'lich_gd.nmh as NMH'
             )
             ->get();
         return response()->json($lichGD);

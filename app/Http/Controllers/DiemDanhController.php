@@ -9,6 +9,7 @@ use App\Models\QrCode;
 use App\Models\SinhVien;
 use App\Models\Tkb;
 use Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -305,6 +306,18 @@ class DiemDanhController extends Controller
             return response()->json($sinhviens);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi lấy danh sách sinh viên: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function exportDiemDanh($ma_gd)
+    {
+        try {
+            $sinhviens = $this->getDanhSachDiemDanh($ma_gd)->original;
+            $ten_mh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')->where('ma_gd', $ma_gd)->select('ten_mh')->first();
+            $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh'));
+            return $pdf->download('danh_sach_diem_danh.pdf');
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi khi xuất PDF: ' . $e->getMessage()], 500);
         }
     }
 }

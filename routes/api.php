@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/diemDanhSinhVien', [DiemDanhController::class, 'diemDanhSinhVien']);
     Route::post('/quet-ma-sinh-vien', [DiemDanhController::class, 'quetMaSinhVien']);
     Route::get('/getDanhSachDiemDanh/{ma_gd}', [DiemDanhController::class, 'getDanhSachDiemDanh']);
+    Route::get('/exportDiemDanh/{ma_gd}', [DiemDanhController::class, 'exportDiemDanh']);
     //else
     Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
