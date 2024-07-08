@@ -62,7 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //else
     Route::get('/getusertoken', [LoginController::class, 'getUserByToken']);
     Route::post('/logout', [TaiKhoanGVController::class, 'logout']);
-    Route::get('/hocky/{id}', [LichDayController::class, 'getHocKy']);
+    Route::get('/hocky', [LichDayController::class, 'getHocKy']);
     Route::get('/lichgd/{ma_gv}', [LichDayController::class, 'getLichGD']);
     //test
     Route::get('/getUser/{ma_gv}', [UserController::class, 'show']);
@@ -75,7 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/editProfileGiaoVien', [GiaoVienController::class, 'store']);
     Route::get('/getTKBWeek/{value}', [TKBController::class, 'getTKBWeek']);
     //Sinh Vien
-    Route::get('/thoi-khoa-bieu', [TKBController::class, 'getTimeTable']);
+    Route::get('/thoi-khoa-bieu/{hocKy}', [TKBController::class, 'getTimeTable']);
     Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
     Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);

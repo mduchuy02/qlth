@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LichDay;
+use App\Models\LichHoc;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +17,15 @@ class LichDayController extends Controller
         //     ->findOrFail($id);
         return LichDay::where('ma_gv', $id)->get();
     }
-    public function getHocKy($ma_gv)
+    public function getHocKy()
     {
-        $querys = LichDay::where('ma_gv', $ma_gv)->get('hoc_ky');
+        $ma = Auth::user()->username;
+        $role = Auth::user()->role;
+        if($role == 'teacher') {
+            $querys = LichDay::where('ma_gv', $ma)->get('hoc_ky');
+        } elseif($role == 'student') {
+            $querys = LichHoc::where('ma_sv', $ma)->join('lich_gd','lich_gd.ma_gd','lich_hoc.ma_gd')->get('hoc_ky');
+        }
         foreach ($querys as $query) {
             $hocky = str_split($query);
             $query->hoc_ky_text = "Học kỳ " . $hocky[10] . " năm học 20" . $hocky[11] . $hocky[12] . "-20" . $hocky[11] . $hocky[12] + 1;
