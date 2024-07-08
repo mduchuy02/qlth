@@ -88,4 +88,21 @@ class TKBController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    public function getMonHocDiemDanh()
+    {
+        try {
+            $ma_sv = Auth::user()->username;
+
+            $attendances = LichHoc::where('ma_sv', $ma_sv)
+                ->with(['lichGD.giaoVien', 'lichGD.monHoc'])
+                ->get()
+                ->map(function ($item) {
+                    return $item->lichGD;
+                });
+
+            return response()->json($attendances);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Something went wrong'], 500);
+        }
+    }
 }
