@@ -76,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getTKBWeek/{value}', [TKBController::class, 'getTKBWeek']);
     //Sinh Vien
     Route::get('/thoi-khoa-bieu/{hocKy}', [TKBController::class, 'getTimeTable']);
+    Route::get('/mon-hoc-diem-danh', [TKBController::class, 'getMonHocDiemDanh']);
     Route::get('/ket-qua-diem-danh/{ma_gd}/{ma_sv}', [KQDiemDanhController::class, 'getAttendance']);
     Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
