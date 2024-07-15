@@ -223,6 +223,108 @@ class PDTController extends Controller
         }
     }
 
+
+    // Department
+    public function getListClassroom(Request $request)
+    {
+        $ten_lop = $request->ten_lop;
+        $query = Lop::query();
+        if (!empty($ten_lop)) {
+            $query->where('ten_lop', 'like', '%' . $ten_lop . '%')
+                ->orWhere('ma_lop', 'like', '%' . $ten_lop . '%');
+        }
+        $classrooms = $query->orderBy('ten_lop')->get();
+
+        $newListClassrooms = $classrooms->map(function ($classrooom, $index) {
+            $classrooom->stt = $index + 1;
+            return $classrooom;
+        });
+
+        return response()->json($newListClassrooms);
+    }
+
+    public function saveClassroom(Request $request, $ma_lop)
+    {
+        try {
+            $ten_lop = $request->ten_lop;
+            $result = Lop::where('ma_lop', $ma_lop)
+                ->update([
+                    'ma_lop' => $ma_lop,
+                    'ten_lop' => $ten_lop,
+                ]);
+            if ($result) {
+                return response()->json([
+                    'message' => 'Cập nhật thành công'
+                ], 200);
+            }
+            return response()->json([
+                'error' => 'Cập nhật thất bại'
+            ], 400);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function deleteClassroom($ma_lop)
+    {
+        try {
+            $deleteClassroom = Lop::where('ma_lop', $ma_lop)
+                ->delete();
+            if ($deleteClassroom) {
+                return response()->json([
+                    'message' => "Xóa thành công",
+                ], 200);
+            }
+            return response()->json([
+                'error' => "Không thể xóa Vui lòng thử lại",
+            ], 400);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => "Không thể xóa Vui lòng thử lại"
+            ], 400);
+        }
+    }
+    public function createClassroom(Request $request)
+    {
+        $ma_lop = $request->ma_lop;
+        $ten_lop = $request->ten_lop;
+        $ma_khoa = $request->ma_khoa;
+
+        $validatedData = $request->validate([
+            'ma_lop' => 'required|unique:lop,ma_lop',
+            'ten_lop' => 'required',
+            'ma_khoa' => 'required|exists:khoa,ma_khoa'
+        ], [
+            'ma_lop.required' => 'Mã lớp là bắt buộc',
+            'ma_lop.unique' => 'Mã lớp đã tồn tại',
+            'ten_lop.required' => 'Tên lớp là bắt buộc',
+            'ma_khoa.required' => 'Mã khoa là bắt buộc',
+            'ma_khoa.exists' => 'Mã khoa không tồn tại'
+        ]);
+        $classroom = Lop::create([
+            'ma_lop' => $ma_lop,
+            'ten_lop' => $ten_lop,
+            'ma_khoa' => $ma_khoa
+        ]);
+        if ($classroom) {
+            return response()->json([
+                'message' => "Thêm thành công",
+            ], 200);
+        }
+        return response()->json([
+            'error' => "Thêm không thành công",
+        ], 400);
+    }
+    // get classroom(ma_lop)
+    public function getClassroom($ma_lop)
+    {
+        $classroom = Lop::where('ma_lop', $ma_lop)
+            ->first();
+        return response()->json($classroom);
+    }
+
+    //
     public function getListClass()
     {
         $listClass = Lop::select('ma_lop', 'ten_lop')->get();

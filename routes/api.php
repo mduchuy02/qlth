@@ -8,6 +8,7 @@ use App\Http\Controllers\LichDayController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LopController;
 use App\Http\Controllers\PDTController;
+use App\Http\Controllers\PDTThongKeController;
 use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\TaiKhoanGVController;
 use App\Http\Controllers\TaiKhoanSVController;
@@ -96,4 +97,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/delete-department/{ma_khoa}', [PDTController::class, 'deleteDepartment']);
     Route::get('/get-list-class', [PDTController::class, 'getListClass']);
     Route::post('/create-student', [PDTController::class, 'createStudent']);
+
+    Route::get('/list-classroom', [PDTController::class, 'getListClassroom']);
+    Route::put('/list-classroom/save/{ma_lop}', [PDTController::class, 'saveClassroom']);
+    Route::get('/list-classroom/{ma_lop}', [PDTController::class, 'getClassroom']);
+    Route::delete('/delete-classroom/{ma_lop}', [PDTController::class, 'deleteClassroom']);
+    Route::post('/create-classroom', [PDTController::class, 'createClassroom']);
+
+    //PDT Thống kê
+    Route::get('/diem-hoc-tap', [PDTThongKeController::class, 'diemHocTap']);
 });
