@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -53,5 +54,9 @@ class User extends Authenticatable
     public function giaovien(): BelongsTo
     {
         return $this->belongsTo(GiaoVien::class, 'ma_gv', 'ma_gv');
+    }
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
