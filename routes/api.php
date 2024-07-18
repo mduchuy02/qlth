@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DiemDanhController;
+use App\Http\Controllers\ForgetPasswordController;
 use App\Http\Controllers\GiaoVienController;
 use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
@@ -35,6 +36,12 @@ use Illuminate\Support\Facades\Route;
 Route::post('/validate-token', [LoginController::class, 'validateToken']);
 Route::post('/loginAdmin', [LoginController::class, 'loginAdmin'])->name('loginAdmin');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/forget-password-user', [ForgetPasswordController::class, 'forgetPassword']);
+Route::post('/reset-password-user', [ForgetPasswordController::class, 'resetPassword']);
+Route::post('/forget-password-admin', [ForgetPasswordController::class, 'forgetPasswordAdmin']);
+Route::post('/reset-password-admin', [ForgetPasswordController::class, 'resetPasswordAdmin']);
+
+// Route::post('/forget-password', [ForgetPasswordController::class], 'forgetPasswordPost');
 Route::middleware('auth:sanctum')->group(function () {
     //Tai khoan giao vien
     Route::get('/taikhoangvs', [TaiKhoanGVController::class, 'index']);
