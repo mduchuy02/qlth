@@ -42,8 +42,6 @@ class ResetPasswordAdminNotification extends Notification
         $domain = 'http://localhost:5173/reset-password-admin';
         $url = url($domain . '?token=' . $this->token . '&email=' . $notifiable->getEmailForPasswordReset());
 
-        return (new MailMessage)
-            ->subject('Lấy lại mật khẩu')
-            ->view('emails.reset_password', ['url' => $url]);
+        return (new MailMessage)->view('emails.reset_password', ['url' => $url])->subject('Lấy lại mật khẩu');
     }
 }

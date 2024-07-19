@@ -57,31 +57,43 @@ class PDTController extends Controller
     // lọc sinh viên theolop
     public function getListStudent(Request $request)
     {
-        $selectedClasses = $request->input('selectedClasses', []);
-        $nameFilter = $request->input('nameFilter', '');
-        $idFilter = $request->input('idFilter', '');
+        try {
+            $selectedClasses = $request->input('selectedClasses', []);
+            $nameFilter = $request->input('nameFilter', '');
+            $idFilter = $request->input('idFilter', '');
 
-        $query = SinhVien::whereIn('ma_lop', $selectedClasses)
-            ->with('lop.khoa')
-            ->select('ma_sv', 'ten_sv', 'ngay_sinh', 'ma_lop');
-        if (!empty($nameFilter)) {
-            $query->where('ten_sv', 'like', '%' . $nameFilter . '%');
-        }
+            $query = SinhVien::whereIn('ma_lop', $selectedClasses)
+                ->with('lop.khoa')
+                ->select('ma_sv', 'ten_sv', 'ngay_sinh', 'ma_lop');
+            if (!empty($nameFilter)) {
+                $query->where('ten_sv', 'like', '%' . $nameFilter . '%');
+            }
 
-        if (!empty($idFilter)) {
-            $query->where('ma_sv', 'like', '%' . $idFilter . '%');
+            if (!empty($idFilter)) {
+                $query->where('ma_sv', 'like', '%' . $idFilter . '%');
+            }
+
+            $students = $query->get();
+            if ($students->isEmpty()) {
+                return response()->json(['message' => 'Không tìm thấy sinh viên.'], 404);
+            }
+            $students = $students
+                ->map(function ($student, $index) {
+                    $student->key = $index + 1;
+                    $student->ten_lop = $student->lop->ten_lop;
+                    $student->ten_khoa = $student->lop->khoa->ten_khoa;
+                    unset($student->lop);
+                    return $student;
+                });
+            $students = $students->sortBy(function ($student) {
+                $names = explode(' ', $student->ten_sv);
+                return end($names);
+            })->sortBy('ten_lop')->values();
+
+            return response()->json($students);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi khi tìm danh sách sinh viên: ' . $e->getMessage()], 500);
         }
-        $students = $query
-            ->orderBy('ten_sv')
-            ->get()
-            ->map(function ($student, $index) {
-                $student->key = $index + 1;
-                $student->ten_lop = $student->lop->ten_lop;
-                $student->ten_khoa = $student->lop->khoa->ten_khoa;
-                unset($student->lop);
-                return $student;
-            });
-        return response()->json($students);
     }
 
     // exportData
@@ -115,10 +127,9 @@ class PDTController extends Controller
             }
 
             Excel::import(new StudentsImport(), $file);
-
             return response()->json(['message' => 'Import Thành công'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Lỗi Import Vui lòng thử lại '], 500);
         }
     }
 
@@ -222,7 +233,6 @@ class PDTController extends Controller
             ], 400);
         }
     }
-
 
     // Department
     public function getListClassroom(Request $request)

@@ -21,7 +21,7 @@ class ForgetPasswordController extends Controller
     public function forgetPassword(Request $request)
     {
         $validatedData = $request->validate([
-            'email' => 'required|email|exists:Users'
+            'email' => 'required|email|exists:users'
         ], [
             'email.required' => 'Vui lòng nhập Email',
             'email.email' => 'Email không hợp lệ',
