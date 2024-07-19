@@ -89,7 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/thong-tin-ca-nhan', [SinhVienController::class, 'profile']);
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
     Route::post('/edit', [SinhVienController::class, 'store']);
-
+    Route::post('/upload-avatar', [SinhVienController::class, 'uploadAvatar']);
     Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
 
 
