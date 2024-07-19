@@ -68,26 +68,17 @@ class DiemDanhController extends Controller
                 ->where('ma_tkb', $tkb['ma_tkb'])
                 ->select('diem_danh2')
                 ->first();
-
-            // if(is_null($diemdanh1->diem_danh1)) {
-            //     dd($sinhVien->diemdanh1 = false);
-            // }else {
-            //     $sinhVien->diemdanh1 = true;
-            // }
-            // if(is_null($diemdanh2->diem_danh2)) {
-            //     $sinhVien->diemdanh2 = false;
-            // }else {
-            // $sinhVien->diemdanh2 = true;
-            // }
-
             $sinhVien->diemdanh1 = !is_null($diemdanh1?->diem_danh1);
             $sinhVien->diemdanh2 = !is_null($diemdanh2?->diem_danh2);
-            $sinhVien->key = $index + 1; // Adding 1 to start keys from 1 instead of 0
+            $sinhVien->key = $index + 1;
             return $sinhVien;
         });
+        $sinhVienListNew = $sinhVienListNew->sortBy(function ($sinhVien) {
+            $names = explode(' ', $sinhVien->ten_sv);
+            return end($names);
+        })->sortBy('ma_lop')->values();
         return response()->json($sinhVienListNew);
     }
-
     public function getIdTKB(Request $request)
     {
         try {
@@ -288,39 +279,62 @@ class DiemDanhController extends Controller
     {
         try {
             $ma_gv = Auth::user()->username;
+
             $tkb = Tkb::where('ma_gd', $ma_gd)
                 ->pluck('ma_tkb');
+
             $diemdanh = DiemDanh::whereIn('ma_tkb', $tkb)
                 ->select('ma_dd', 'ma_sv')
                 ->get();
             $sinhviens = LichHoc::where('ma_gd', $ma_gd)
                 ->select('ma_sv')
                 ->get();
+
             $sinhviens->map(function ($sinhvien) use ($tkb) {
                 $sinhvien->sbh = $tkb->count();
+
                 $sinhvien->sbdd = DiemDanh::whereIn('ma_tkb', $tkb)
                     ->where('ma_sv', $sinhvien->ma_sv)
                     ->count();
+
                 $sinhvien->ten_sv = SinhVien::where('ma_sv', $sinhvien->ma_sv)
                     ->select('ten_sv')
-                    ->get();
+                    ->first()->ten_sv;
+
                 $sinhvien->sbv = $sinhvien->sbh - $sinhvien->sbdd;
-                $sinhvien->ten_sv = $sinhvien['ten_sv'][0]['ten_sv'];
+
+                $sinhvien->ma_lop = SinhVien::where('ma_sv', $sinhvien->ma_sv)
+                    ->select('ma_lop')
+                    ->first()->ma_lop;
+
                 return $sinhvien;
             });
 
+
+            $sinhviens = $sinhviens
+                ->sortBy(function ($sinhvien) {
+                    $names = explode(' ', $sinhvien->ten_sv);
+                    return end($names);
+                })
+                ->sortBy('ma_lop')
+                ->values();
             return response()->json($sinhviens);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi lấy danh sách sinh viên: ' . $e->getMessage()], 500);
         }
     }
 
+
     public function exportDiemDanh($ma_gd)
     {
         try {
             $sinhviens = $this->getDanhSachDiemDanh($ma_gd)->original;
             $ten_mh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')->where('ma_gd', $ma_gd)->select('ten_mh')->first();
-            $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh'));
+
+            $nmh = LichDay::where('ma_gd', $ma_gd)
+                ->select('nmh')->first();
+
+            $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh', 'nmh'));
             return $pdf->download('danh_sach_diem_danh.pdf');
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi xuất PDF: ' . $e->getMessage()], 500);
