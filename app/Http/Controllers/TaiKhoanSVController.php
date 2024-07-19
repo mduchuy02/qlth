@@ -73,7 +73,7 @@ class TaiKhoanSVController extends Controller
         $sinhvien->save();
 
         if ($request->filled('password')) {
-            $taikhoan->mat_khau = Hash::make($request->password);
+            $taikhoan->password = Hash::make($request->password);
             $taikhoan->save();
         }
 
