@@ -53,6 +53,12 @@ class DiemDanhController extends Controller
         if ($sinhVienList->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy danh sách sinh viên phù hợp.'], 404);
         }
+        $sinhVienList = $sinhVienList->map(function ($sinhVien) {
+            $sinhVien->name = last(explode(' ', $sinhVien->ten_sv));
+            return $sinhVien;
+        });
+        $sinhVienList = $sinhVienList->sortBy('name')->values();
+        // return response()->json($sinhVienList);
         $sinhVienListNew = $sinhVienList->map(function ($sinhVien, $index) use ($tkb) {
             $diemdanh1 = DiemDanh::where('ma_sv', $sinhVien->ma_sv)
                 ->where('ma_tkb', $tkb['ma_tkb'])

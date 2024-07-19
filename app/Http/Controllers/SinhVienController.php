@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 use function PHPUnit\Framework\isNull;
 
@@ -166,5 +167,38 @@ class SinhVienController extends Controller
         if ($update && $taikhoansv) {
             return response()->json(['message' => 'Cập nhật thông tin sinh viên thành công!'], 200);
         }
+    }
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $ma_sv = Auth::user()->username;
+        if (!$ma_sv) {
+            return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
+
+        $sinhVien = SinhVien::findOrFail($ma_sv);
+
+        // Handle the file upload
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('avatars', $filename, 'public');
+
+            // Optionally delete the old avatar file
+            if ($sinhVien->avatar) {
+                Storage::disk('public')->delete($sinhVien->avatar);
+            }
+
+            // Update the avatar path in the database
+            $sinhVien->avatar = $path;
+            $sinhVien->save();
+
+            return response()->json(['avatarUrl' => Storage::url($path)]);
+        }
+
+        return response()->json(['error' => 'File not uploaded'], 500);
     }
 }
