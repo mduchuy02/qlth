@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DiemDanhController;
 use App\Http\Controllers\ForgetPasswordController;
 use App\Http\Controllers\GiaoVienController;
+use App\Http\Controllers\KetQuaController;
 use App\Http\Controllers\KQDiemDanhController;
 use App\Http\Controllers\LichDayController;
 use App\Http\Controllers\LoginController;
@@ -91,7 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/edit', [SinhVienController::class, 'store']);
     Route::post('/upload-avatar', [SinhVienController::class, 'uploadAvatar']);
     Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
-
+    Route::get('/getDiem', [KetQuaController::class, 'getDiem']);
 
     //PDT
     Route::get('/get-department-class', [PDTController::class, 'getListDepartmentClass']);
