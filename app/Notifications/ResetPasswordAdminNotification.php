@@ -39,6 +39,7 @@ class ResetPasswordAdminNotification extends Notification
      */
     public function toMail($notifiable)
     {
+        // $domain = 'https://quanlytruonghoc.id.vn/reset-password-admin';
         $domain = 'http://localhost:5173/reset-password-admin';
         $url = url($domain . '?token=' . $this->token . '&email=' . $notifiable->getEmailForPasswordReset());
 
