@@ -16,22 +16,41 @@ class TaiKhoanSVController extends Controller
     {
         return SinhVien::findOrFail($id);
     }
-    public function index()
+    public function index(Request $request)
     {
-        // Get paginated results with 10 items per page
-        $taikhoansvQuery = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
-            ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.email', 'sinh_vien.phai','sinh_vien.avatar');
 
-        $taikhoansv = $taikhoansvQuery->paginate(10);
+        $name = $request->nameOrID;
+        $query = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
+            ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.email', 'sinh_vien.ma_lop', 'sinh_vien.phai');
 
-        // Add custom id field to each item
-        $taikhoansv->getCollection()->transform(function ($item, $key) use ($taikhoansv) {
-            $item->id = $key + 1 + ($taikhoansv->currentPage() - 1) * $taikhoansv->perPage();
+
+        if (!empty($name)) {
+            $query->where('sinh_vien.ten_sv', 'like', '%' . $name . '%')->orWhere('sinh_vien.ma_sv', 'like', '%' . $name . '%');
+        }
+
+        $query->orderBy('sinh_vien.ma_lop')->orderByRaw("SUBSTRING_INDEX(sinh_vien.ten_sv, ' ', -1)");
+
+
+        $account = $query->paginate(10);
+
+        $account->getCollection()->transform(function ($item, $key) use ($account) {
+            $item->id = $key + 1 + ($account->currentPage() - 1) * $account->perPage();
             return $item;
         });
 
-        // Return paginated results as JSON
-        return response()->json($taikhoansv);
+        return response()->json($account);
+        // $taikhoansvQuery = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
+        //     ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.email', 'sinh_vien.phai');
+
+        // $taikhoansv = $taikhoansvQuery->paginate(10);
+        // // Add custom id field to each item
+        // $taikhoansv->getCollection()->transform(function ($item, $key) use ($taikhoansv) {
+        //     $item->id = $key + 1 + ($taikhoansv->currentPage() - 1) * $taikhoansv->perPage();
+        //     return $item;
+        // });
+
+        // // Return paginated results as JSON
+        // return response()->json($taikhoansv);
     }
     public function edit($id)
     {
@@ -44,8 +63,11 @@ class TaiKhoanSVController extends Controller
     }
     public function destroy($id)
     {
-        User::find($id)->delete();
-        SinhVien::find($id)->delete();
+        $account = User::where('username', $id)->first();
+        $account->delete();
+
+        $user = SinhVien::where('ma_sv', $id)->first();
+        $user->delete();
     }
 
     public function update(Request $request, $id)

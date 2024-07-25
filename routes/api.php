@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DiemDanhController;
 use App\Http\Controllers\ForgetPasswordController;
+use App\Http\Controllers\GetAPIQRController;
 use App\Http\Controllers\GiaoVienController;
 use App\Http\Controllers\KetQuaController;
 use App\Http\Controllers\KQDiemDanhController;

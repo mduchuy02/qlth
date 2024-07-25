@@ -15,18 +15,27 @@ class TaiKhoanGVController extends Controller
 {
     //
 
-    public function index()
+    public function index(Request $request)
     {
-        $taikhoangv = User::join('giao_vien', 'users.ma_gv', 'giao_vien.ma_gv')
-            ->select('giao_vien.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email')
-            ->get();
+        $name = $request->nameOrID;
+        $query = User::join('giao_vien', 'users.ma_gv', 'giao_vien.ma_gv')
+            ->select('giao_vien.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email');
 
-        $taikhoangv = $taikhoangv->map(function ($item, $key) {
+        if (!empty($name)) {
+            $query->where('giao_vien.ten_gv', 'like', '%' . $name . '%')->orWhere('giao_vien.ma_gv', 'like', '%' . $name . '%');
+        }
+
+        $account = $query->get();
+        $account = $account->map(function ($item, $key) {
             $item->id = $key + 1;
             return $item;
         });
 
-        return response()->json($taikhoangv);
+        $account = $account->sortBy(function ($user) {
+            $name = explode(' ', $user->name);
+            return end($name);
+        })->values();
+        return response()->json($account);
     }
     public function edit($id)
     {
@@ -75,8 +84,11 @@ class TaiKhoanGVController extends Controller
 
     public function destroy($id)
     {
-        TaiKhoanGV::find($id)->delete();
-        GiaoVien::find($id)->delete();
+        $account = User::where('username', $id)->first();
+        $account->delete();
+
+        $user = GiaoVien::where('ma_gv', $id)->first();
+        $user->delete();
     }
 
     public function store(Request $request)
