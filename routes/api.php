@@ -91,10 +91,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/sinh-vien-diem-danh', [SinhVienController::class, 'createAttandance']);
     Route::post('/edit', [SinhVienController::class, 'store']);
     Route::post('/upload-avatar', [SinhVienController::class, 'uploadAvatar']);
-    Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
     Route::get('/getDiem', [KetQuaController::class, 'getDiem']);
-
+    
     //PDT
+    Route::post('/upload-avatar-admin', [AdminController::class, 'uploadAvatarAdmin']);
+    Route::post('/upload-avatar-sv/{id}', [AdminController::class, 'uploadAvatarSv']);
+    Route::post('/upload-avatar-gv/{id}', [AdminController::class, 'uploadAvatarGv']);
+    Route::get('/thong-tin-admin', [AdminController::class, 'getProfile']);
     Route::get('/get-department-class', [PDTController::class, 'getListDepartmentClass']);
     Route::get('/get-department-class/{id}', [PDTController::class, 'getClass']);
     Route::post('/get-list-student', [PDTController::class, 'getListStudent']);
