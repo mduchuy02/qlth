@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiemDanh;
+use App\Models\GiaoVien;
 use App\Models\LichHoc;
 use App\Models\QrCode;
 use App\Models\SinhVien;
@@ -173,32 +174,64 @@ class SinhVienController extends Controller
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+        $role = Auth::user()->role;
+        switch ($role) {
+            case 'student':
+                $ma_sv = Auth::user()->username;
+                if (!$ma_sv) {
+                    return response()->json(['error' => 'Unauthenticated.'], 401);
+                }
 
-        $ma_sv = Auth::user()->username;
-        if (!$ma_sv) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
+                $sinhVien = SinhVien::findOrFail($ma_sv);
+                // Handle the file upload
+                if ($request->hasFile('avatar')) {
+                    $file = $request->file('avatar');
+                    $filename = time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('avatars', $filename, 'public');
+
+                    // Optionally delete the old avatar file
+                    if ($sinhVien->avatar) {
+                        Storage::disk('public')->delete($sinhVien->avatar);
+                    }
+
+                    // Update the avatar path in the database
+                    $sinhVien->avatar = $path;
+                    $sinhVien->save();
+                    Storage::url($path);
+                    // return response()->json(['avatarUrl' => Storage::url($path)]);
+                    return response()->json(['avatarUrl' => $path]);
+                }
+                break;
+            case 'teacher':
+                $ma_gv = Auth::user()->username;
+                if(!$ma_gv) {
+                    return response()->json(['error' => 'Unauthenticated.'], 401);
+                }
+                $giaovien = GiaoVien::findOrFail($ma_gv);
+                if ($request->hasFile('avatar')) {
+                    $file = $request->file('avatar');
+                    $filename = time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('avatars', $filename, 'public');
+
+                    // Optionally delete the old avatar file
+                    if ($giaovien->avatar) {
+                        Storage::disk('public')->delete($giaovien->avatar);
+                    }
+
+                    // Update the avatar path in the database
+                    $giaovien->avatar = $path;
+                    $giaovien->save();
+                    Storage::url($path);
+                    // return response()->json(['avatarUrl' => Storage::url($path)]);
+                    return response()->json(['avatarUrl' => $path]);
+                }
+                break;
+            default:
+                # code...
+                break;
         }
 
-        $sinhVien = SinhVien::findOrFail($ma_sv);
-
-        // Handle the file upload
-        if ($request->hasFile('avatar')) {
-            $file = $request->file('avatar');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('avatars', $filename, 'public');
-
-            // Optionally delete the old avatar file
-            if ($sinhVien->avatar) {
-                Storage::disk('public')->delete($sinhVien->avatar);
-            }
-
-            // Update the avatar path in the database
-            $sinhVien->avatar = $path;
-            $sinhVien->save();
-
-            return response()->json(['avatarUrl' => Storage::url($path)]);
-        }
-
+        
         return response()->json(['error' => 'File not uploaded'], 500);
     }
 }

@@ -18,6 +18,7 @@ class TaiKhoanSVController extends Controller
     }
     public function index(Request $request)
     {
+
         $name = $request->nameOrID;
         $query = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
             ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.email', 'sinh_vien.ma_lop', 'sinh_vien.phai');
@@ -54,7 +55,7 @@ class TaiKhoanSVController extends Controller
     public function edit($id)
     {
         $taikhoansv = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
-            ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.ngay_sinh', 'sinh_vien.email', 'sinh_vien.phai', 'sinh_vien.sdt', 'sinh_vien.ma_lop', 'sinh_vien.dia_chi')
+            ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.ngay_sinh', 'sinh_vien.email', 'sinh_vien.phai', 'sinh_vien.sdt', 'sinh_vien.ma_lop', 'sinh_vien.dia_chi','sinh_vien.avatar')
             ->where('sinh_vien.ma_sv', $id)
             ->first();
 
