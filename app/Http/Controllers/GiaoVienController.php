@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\GiaoVienExport;
 use App\Models\GiaoVien;
+use App\Models\LichDay;
 use App\Models\TaiKhoanGV;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -74,5 +76,17 @@ class GiaoVienController extends Controller
 
     }
 
-    
+    public function export()
+    {
+        try {
+            $ma_gv = Auth::user()->username;
+            $ma_gd = LichDay::where('ma_gv', $ma_gv)->pluck('ma_gd');
+            if (!$ma_gv) {
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+            }
+            return (new GiaoVienExport($ma_gd))->download('test.xlsx');
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Something went wrong'], 500);
+        }
+    }
 }
