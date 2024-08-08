@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KetQua;
+use App\Models\Khoa;
 use Illuminate\Http\Request;
 
 class PDTThongKeController extends Controller
@@ -17,5 +18,23 @@ class PDTThongKeController extends Controller
         return response()->json([
             'data' => $data
         ]);
+    }
+
+    public function soLuongSinhVien()
+    {
+        $khoas = Khoa::with(['lops.sinhViens'])->get();
+
+
+        $thongKe = $khoas->map(function ($khoa) {
+            $soLuongSinhVien = $khoa->lops->flatMap(function ($lop) {
+                return $lop->sinhViens;
+            })->count();
+
+            return [
+                'ma_khoa' => $khoa->ma_khoa,
+                'so_luong_sinh_vien' => $soLuongSinhVien,
+            ];
+        });
+        return response()->json($thongKe);
     }
 }

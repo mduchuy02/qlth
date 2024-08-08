@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class KQDiemDanhController extends Controller
 {
-    // lấy mã QR code sinh vien
+
     public function getAttendance($ma_gd, $ma_sv)
     {
         try {

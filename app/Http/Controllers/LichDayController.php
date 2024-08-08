@@ -21,10 +21,10 @@ class LichDayController extends Controller
     {
         $ma = Auth::user()->username;
         $role = Auth::user()->role;
-        if($role == 'teacher') {
+        if ($role == 'teacher') {
             $querys = LichDay::where('ma_gv', $ma)->get('hoc_ky');
-        } elseif($role == 'student') {
-            $querys = LichHoc::where('ma_sv', $ma)->join('lich_gd','lich_gd.ma_gd','lich_hoc.ma_gd')->get('hoc_ky');
+        } elseif ($role == 'student') {
+            $querys = LichHoc::where('ma_sv', $ma)->join('lich_gd', 'lich_gd.ma_gd', 'lich_hoc.ma_gd')->get('hoc_ky');
         }
         foreach ($querys as $query) {
             $hocky = str_split($query);

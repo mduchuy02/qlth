@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DiemDanhController extends Controller
 {
@@ -50,6 +51,7 @@ class DiemDanhController extends Controller
         $sinhVienList = SinhVien::whereHas('lichHocs', function ($query) use ($maGd) {
             $query->whereIn('ma_gd', $maGd);
         })->get();
+
         if ($sinhVienList->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy danh sách sinh viên phù hợp.'], 404);
         }
@@ -58,7 +60,6 @@ class DiemDanhController extends Controller
             return $sinhVien;
         });
         $sinhVienList = $sinhVienList->sortBy('name')->values();
-        // return response()->json($sinhVienList);
         $sinhVienListNew = $sinhVienList->map(function ($sinhVien, $index) use ($tkb) {
             $diemdanh1 = DiemDanh::where('ma_sv', $sinhVien->ma_sv)
                 ->where('ma_tkb', $tkb['ma_tkb'])
@@ -303,10 +304,13 @@ class DiemDanhController extends Controller
 
                 $sinhvien->sbv = $sinhvien->sbh - $sinhvien->sbdd;
 
+
                 $sinhvien->ma_lop = SinhVien::where('ma_sv', $sinhvien->ma_sv)
                     ->select('ma_lop')
                     ->first()->ma_lop;
 
+
+                $sinhvien->diemqt = $this->customRound($sinhvien->sbdd * (10 / $tkb->count()));
                 return $sinhvien;
             });
 
@@ -323,8 +327,35 @@ class DiemDanhController extends Controller
             return response()->json(['message' => 'Đã xảy ra lỗi khi lấy danh sách sinh viên: ' . $e->getMessage()], 500);
         }
     }
+    function customRound($number)
+    {
+        $intPart = floor($number);
+        $decimalPart = $number - $intPart;
 
+        if ($decimalPart < 0.25) {
+            return $intPart + 0.0;
+        } elseif ($decimalPart < 0.75) {
+            return $intPart + 0.5;
+        } else {
+            return $intPart + 1.0;
+        }
+    }
 
+    // public function exportDiemDanh($ma_gd)
+    // {
+    //     try {
+    //         $sinhviens = $this->getDanhSachDiemDanh($ma_gd)->original;
+    //         $ten_mh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')->where('ma_gd', $ma_gd)->select('ten_mh')->first();
+
+    //         $nmh = LichDay::where('ma_gd', $ma_gd)
+    //             ->select('nmh')->first();
+
+    //         $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh', 'nmh'));
+    //         return $pdf->download('danh_sach_diem_danh.pdf');
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Đã xảy ra lỗi khi xuất PDF: ' . $e->getMessage()], 500);
+    //     }
+    // }
     public function exportDiemDanh($ma_gd)
     {
         try {
@@ -334,8 +365,11 @@ class DiemDanhController extends Controller
             $nmh = LichDay::where('ma_gd', $ma_gd)
                 ->select('nmh')->first();
 
-            $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh', 'nmh'));
-            return $pdf->download('danh_sach_diem_danh.pdf');
+            // return response()->json($sinhviens);
+            // $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh', 'nmh'));
+            // $data = $request->input('data');
+            return Excel::download(new \App\Exports\DiemDanhExport($sinhviens), 'dsdd.xlsx');
+            // return $pdf->download('danh_sach_diem_danh.pdf');
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi xuất PDF: ' . $e->getMessage()], 500);
         }

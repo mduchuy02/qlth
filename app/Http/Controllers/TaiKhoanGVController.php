@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
+
 
 
 class TaiKhoanGVController extends Controller
@@ -40,7 +42,7 @@ class TaiKhoanGVController extends Controller
     public function edit($id)
     {
         $taikhoangv = User::join('giao_vien', 'users.ma_gv', 'giao_vien.ma_gv')
-            ->select('giao_vien.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email','giao_vien.avatar')
+            ->select('giao_vien.ma_gv', 'giao_vien.ten_gv as name', 'giao_vien.ngay_sinh', 'giao_vien.phai', 'giao_vien.dia_chi', 'giao_vien.sdt', 'giao_vien.email', 'giao_vien.avatar')
             ->where('giao_vien.ma_gv', $id)
             ->first();
         return response()->json($taikhoangv);
@@ -94,19 +96,37 @@ class TaiKhoanGVController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_gv' => 'required|string|max:10|unique:giao_vien',
+            'ma_gv' => 'required|string|max:10|min:8|unique:giao_vien|regex:/^DH[A-Z]{2}[0-9]{4}$/',
             'ten_gv' => 'required|string|max:150',
-            'ngay_sinh' => 'required|date',
+            'ngay_sinh' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    try {
+                        $birthDate = Carbon::parse($value);
+                        $currentYear = Carbon::now()->year;
+                        $birthYear = $birthDate->year;
+
+                        if (($currentYear - $birthYear) < 24) {
+                            $fail('Năm sinh không hợp lệ.');
+                        }
+                    } catch (\Exception $e) {
+                        $fail('Không phải ngày hợp lệ');
+                    }
+                },
+            ],
             'phai' => 'required|in:1,0',
             'dia_chi' => 'required|string|max:300',
             'sdt' => 'required|string|max:11',
             'email' => 'required|email|max:50|unique:giao_vien',
-            'password' => 'required|confirmed',
+            'password' => 'required|confirmed|min:8',
         ], [
             'ma_gv.required' => 'Nhập mã giáo viên',
             'ma_gv.string' => 'Mã giáo viên phải là chuỗi',
             'ma_gv.max' => 'Mã giáo viên không được vượt quá 10 ký tự',
             'ma_gv.unique' => 'Mã giáo viên đã tồn tại',
+            'ma_gv.min' => 'Mã giảo viên phải đủ 8 ký tự',
+            'ma_gv.regex' =>  'Mã giáo viên không hợp lệ',
 
             'ten_gv.required' => 'Nhập tên giáo viên',
             'ten_gv.string' => 'Tên giáo viên phải là chuỗi',
@@ -132,6 +152,7 @@ class TaiKhoanGVController extends Controller
             'email.unique' => 'Email đã tồn tại',
 
             'password.required' => 'Nhập mật khẩu',
+            'password.min' => 'Mật khẩu phải có 8 ký tự',
             'password.confirmed' => 'Mật khẩu xác nhận không trùng khớp',
         ]);
 

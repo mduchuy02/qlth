@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Exports\DiemDanhExport;
 use App\Exports\StudentsExport;
 use App\Imports\StudentsImport;
 use App\Models\Khoa;
@@ -101,6 +101,14 @@ class PDTController extends Controller
     {
         $data = $request->input('data');
         return Excel::download(new StudentsExport($data), 'students.xlsx');
+    }
+
+    public function exportDataDiemDanh(Request $request)
+    {
+        // $data = $request->input('maGD');
+        $data = Khoa::all()->toArray();
+
+        return Excel::download(new DiemDanhExport($data), 'students.xlsx');
     }
 
     //import data
@@ -342,6 +350,23 @@ class PDTController extends Controller
             return response()->json([
                 'listClass' => $listClass,
             ], 200);
+        }
+    }
+
+    public function classListStudent(Request $request)
+    {
+        try {
+            $ma_lop = $request->maLop;
+            $query = SinhVien::join('lop', 'sinh_vien.ma_lop', 'lop.ma_lop')
+                ->where('lop.ma_lop', $ma_lop)
+                ->select('ma_sv', 'ten_sv', 'phai', 'email', 'lop.ten_lop')
+                ->orderByRaw("SUBSTRING_INDEX(sinh_vien.ten_sv,' ', -1)");
+            $sinhViens = $query->get();
+            return response()->json($sinhViens, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }
