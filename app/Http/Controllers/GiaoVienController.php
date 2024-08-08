@@ -532,6 +532,7 @@ class GiaoVienController extends Controller
         }
 
         return $tkbEntries;
+    }
 
     public function export()
     {
