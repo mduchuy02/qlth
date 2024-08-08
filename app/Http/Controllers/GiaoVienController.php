@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\DiemDanh;
 use App\Models\GiaoVien;
 use App\Models\LichDay;
@@ -9,6 +10,9 @@ use App\Models\LichHoc;
 use App\Models\MonHoc;
 use App\Models\SinhVien;
 use App\Models\Tkb;
+
+use App\Exports\GiaoVienExport;
+
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -501,6 +505,7 @@ class GiaoVienController extends Controller
         }
     }
 
+
     private function createTkbEntriesCustom($lichDay, $buoi)
     {
         $ngay_bd = Carbon::parse($lichDay->ngay_bd);
@@ -527,5 +532,19 @@ class GiaoVienController extends Controller
         }
 
         return $tkbEntries;
+
+    public function export()
+    {
+        try {
+            $ma_gv = Auth::user()->username;
+            $ma_gd = LichDay::where('ma_gv', $ma_gv)->pluck('ma_gd');
+            if (!$ma_gv) {
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+            }
+            return (new GiaoVienExport($ma_gd))->download('test.xlsx');
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Something went wrong'], 500);
+        }
+
     }
 }

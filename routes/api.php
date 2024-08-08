@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tkbGiaoVien', [LichDayController::class, 'getThoiKhoaBieu']);
     Route::post('/editProfileGiaoVien', [GiaoVienController::class, 'store']);
     Route::get('/getTKBWeek/{value}', [TKBController::class, 'getTKBWeek']);
+
     Route::post('/create-schedule', [GiaoVienController::class, 'createSchedule']);
     Route::get('/getSubject', [GiaoVienController::class, 'getSubject']);
     Route::get('/teaching-schedule/{ma_gv}', [GiaoVienController::class, 'teachingSchedule']);
@@ -97,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/edit-schedule', [GiaoVienController::class, 'editSchedule']);
     Route::post('/save-schedule', [GiaoVienController::class, 'saveSchedule']);
     Route::post('/create-schedule-custom', [GiaoVienController::class, 'createScheduleCustom']);
+
+
+    Route::get('/testExport', [GiaoVienController::class, 'export']);
 
     //Sinh Vien
     Route::get('/thoi-khoa-bieu/{hocKy}', [TKBController::class, 'getTimeTable']);
