@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\SinhVien;
-use App\Models\TaiKhoanSV;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class TaiKhoanSVController extends Controller
 {
@@ -39,23 +39,11 @@ class TaiKhoanSVController extends Controller
         });
 
         return response()->json($account);
-        // $taikhoansvQuery = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
-        //     ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.email', 'sinh_vien.phai');
-
-        // $taikhoansv = $taikhoansvQuery->paginate(10);
-        // // Add custom id field to each item
-        // $taikhoansv->getCollection()->transform(function ($item, $key) use ($taikhoansv) {
-        //     $item->id = $key + 1 + ($taikhoansv->currentPage() - 1) * $taikhoansv->perPage();
-        //     return $item;
-        // });
-
-        // // Return paginated results as JSON
-        // return response()->json($taikhoansv);
     }
     public function edit($id)
     {
         $taikhoansv = User::join('sinh_vien', 'users.ma_sv', 'sinh_vien.ma_sv')
-            ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.ngay_sinh', 'sinh_vien.email', 'sinh_vien.phai', 'sinh_vien.sdt', 'sinh_vien.ma_lop', 'sinh_vien.dia_chi','sinh_vien.avatar')
+            ->select('users.ma_sv', 'sinh_vien.ten_sv', 'sinh_vien.ngay_sinh', 'sinh_vien.email', 'sinh_vien.phai', 'sinh_vien.sdt', 'sinh_vien.ma_lop', 'sinh_vien.dia_chi', 'sinh_vien.avatar')
             ->where('sinh_vien.ma_sv', $id)
             ->first();
 
@@ -104,20 +92,38 @@ class TaiKhoanSVController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_sv' => 'required|string|max:10|unique:sinh_vien',
+            'ma_sv' => 'required|string|max:10|min:10|unique:sinh_vien|regex:/^DH\d+$/',
             'ten_sv' => 'required|string|max:150',
-            'ngay_sinh' => 'required|date',
+            'ngay_sinh' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    try {
+                        $birthDate = Carbon::parse($value);
+                        $currentYear = Carbon::now()->year;
+                        $birthYear = $birthDate->year;
+
+                        if (($currentYear - $birthYear) < 18) {
+                            $fail('Năm sinh không hợp lệ.');
+                        }
+                    } catch (\Exception $e) {
+                        $fail('Không phải ngày hợp lệ');
+                    }
+                },
+            ],
             'phai' => 'required|in:1,0',
             'dia_chi' => 'required|string|max:300',
             'sdt' => 'required|string|max:11|regex:/^[0-9]+$/',
             'email' => 'required|email|max:50|unique:sinh_vien',
-            'password' => 'required|confirmed',
-            'ma_lop' => 'required|exists:lop,ma_lop', // Thêm validation cho ma_lop
+            'password' => 'required|confirmed|min:8',
+            'ma_lop' => 'required|exists:lop,ma_lop',
         ], [
             'ma_sv.required' => 'Nhập mã sinh viên',
             'ma_sv.string' => 'Mã sinh viên phải là chuỗi',
             'ma_sv.max' => 'Mã sinh viên không được vượt quá 10 ký tự',
             'ma_sv.unique' => 'Mã sinh viên đã tồn tại',
+            'ma_sv.regex' => 'Mã sinh viên không hợp lệ',
+            'ma_sv.min' => 'Mã sinh viên phải đủ 10 ký tự',
 
             'ten_sv.required' => 'Nhập tên sinh viên',
             'ten_sv.string' => 'Tên sinh viên phải là chuỗi',
@@ -144,6 +150,7 @@ class TaiKhoanSVController extends Controller
             'email.unique' => 'Email đã tồn tại',
 
             'password.required' => 'Nhập mật khẩu',
+            'password.min' => 'Mật khẩu phải có 8 ký tự',
             'password.confirmed' => 'Mật khẩu xác nhận không trùng khớp',
 
             'ma_lop.required' => 'Chọn mã lớp',

@@ -24,6 +24,7 @@ class SinhVienController extends Controller
     public function profile()
     {
         try {
+            //Lấy thông tin người dùng hiện tại đã xác thực.
             $ma_sv = Auth::user()->username;
             if (!$ma_sv) {
                 return response()->json(['error' => 'Unauthenticated.'], 401);
@@ -204,7 +205,7 @@ class SinhVienController extends Controller
                 break;
             case 'teacher':
                 $ma_gv = Auth::user()->username;
-                if(!$ma_gv) {
+                if (!$ma_gv) {
                     return response()->json(['error' => 'Unauthenticated.'], 401);
                 }
                 $giaovien = GiaoVien::findOrFail($ma_gv);
@@ -231,7 +232,7 @@ class SinhVienController extends Controller
                 break;
         }
 
-        
+
         return response()->json(['error' => 'File not uploaded'], 500);
     }
 }

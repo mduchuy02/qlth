@@ -17,7 +17,6 @@ class SinhVien extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
-
     protected $fillable = [
         'ma_sv',
         'ten_sv',
@@ -26,7 +25,6 @@ class SinhVien extends Model
         'dia_chi',
         'sdt',
         'email',
-        'anh_qr',
         'ma_lop',
     ];
 
@@ -42,10 +40,5 @@ class SinhVien extends Model
     public function lichHocs(): HasMany
     {
         return $this->hasMany(LichHoc::class, 'ma_sv', 'ma_sv');
-    }
-
-    public function ketQuas(): HasMany
-    {
-        return $this->hasMany(KetQua::class, 'ma_sv', 'ma_sv');
     }
 }

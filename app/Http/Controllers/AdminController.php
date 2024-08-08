@@ -19,10 +19,10 @@ class AdminController extends Controller
             if (!$profile) {
                 return response()->json(['error' => 'Unauthenticated.'], 401);
             }
-            $admin = Admin::where('username', $profile)->select("username", "email", "full_name", "role","avatar")->firstOrFail();
+            $admin = Admin::where('username', $profile)->select("username", "email", "full_name", "role", "avatar")->firstOrFail();
             return response()->json($admin);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Something went wrong'], 500);
+            return response()->json(['error' => $e], 500);
         }
     }
 
@@ -101,7 +101,8 @@ class AdminController extends Controller
         }
         return response()->json(['error' => 'File not uploaded'], 500);
     }
-    public function uploadAvatarSv(Request $request, $ma_sv) {
+    public function uploadAvatarSv(Request $request, $ma_sv)
+    {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -129,7 +130,8 @@ class AdminController extends Controller
             return response()->json(['avatarUrl' => $path]);
         }
     }
-    public function uploadAvatarGv(Request $request, $ma_gv) {
+    public function uploadAvatarGv(Request $request, $ma_gv)
+    {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
