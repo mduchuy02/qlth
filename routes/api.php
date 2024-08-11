@@ -100,7 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/create-schedule-custom', [GiaoVienController::class, 'createScheduleCustom']);
 
 
-    Route::get('/testExport', [GiaoVienController::class, 'export']);
+    Route::get('/exportListAttendance', [GiaoVienController::class, 'export']);
 
     //Sinh Vien
     Route::get('/thoi-khoa-bieu/{hocKy}', [TKBController::class, 'getTimeTable']);
