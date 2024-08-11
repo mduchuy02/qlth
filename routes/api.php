@@ -98,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/edit-schedule', [GiaoVienController::class, 'editSchedule']);
     Route::post('/save-schedule', [GiaoVienController::class, 'saveSchedule']);
     Route::post('/create-schedule-custom', [GiaoVienController::class, 'createScheduleCustom']);
+    Route::post('/look-up-information', [GiaoVienController::class, 'lookUpInformation']);
+    Route::get('/get-information-student/{ma_sv}', [GiaoVienController::class, 'getInformation']);
+
 
 
     Route::get('/testExport', [GiaoVienController::class, 'export']);
@@ -123,11 +126,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/export-data-students', [PDTController::class, 'exportData']);
     Route::post('/export-data-diemdanhs', [PDTController::class, 'exportDataDiemDanh']);
     Route::post('/import-data', [PDTController::class, 'importData']);
+    // khoa
     Route::get('/list-department', [PDTController::class, 'getListDepartment']);
     Route::get('/list-department/{ma_khoa}', [PDTController::class, 'getDepartment']);
     Route::put('/list-department/save/{ma_khoa}', [PDTController::class, 'saveDepartment']);
     Route::post('/create-department', [PDTController::class, 'createDepartment']);
     Route::delete('/delete-department/{ma_khoa}', [PDTController::class, 'deleteDepartment']);
+    //mon hoc
+    Route::get('/list-subject', [PDTController::class, 'getListSubject']);
+    Route::get('/list-subject/{ma_mh}', [PDTController::class, 'getSubject']);
+    Route::put('/list-subject/save/{ma_mh}', [PDTController::class, 'saveSubject']);
+    Route::post('/create-subject', [PDTController::class, 'createSubject']);
+    Route::delete('/delete-subject/{ma_mh}', [PDTController::class, 'deleteSubject']);
+
+
+
+    //lop
     Route::get('/get-list-class', [PDTController::class, 'getListClass']);
     Route::post('/create-student', [PDTController::class, 'createStudent']);
     Route::get('/list-classroom', [PDTController::class, 'getListClassroom']);
@@ -135,6 +149,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/list-classroom/{ma_lop}', [PDTController::class, 'getClassroom']);
     Route::delete('/delete-classroom/{ma_lop}', [PDTController::class, 'deleteClassroom']);
     Route::post('/create-classroom', [PDTController::class, 'createClassroom']);
+    Route::get('/get-list-name-teachers', [PDTController::class, 'getListNameTeachers']);
     Route::get('/class-list-student', [PDTController::class, 'classListStudent']);
 
     //PDT Thống kê

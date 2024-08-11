@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\GiaoVien;
+use App\Models\LichDay;
+use App\Models\LichHoc;
 use App\Models\TaiKhoanGV;
+use App\Models\Tkb;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -86,11 +89,18 @@ class TaiKhoanGVController extends Controller
 
     public function destroy($id)
     {
-        $account = User::where('username', $id)->first();
-        $account->delete();
 
-        $user = GiaoVien::where('ma_gv', $id)->first();
-        $user->delete();
+        $gd = LichDay::Where('ma_gv', $id)->pluck('ma_gd');
+
+        Tkb::whereIn('ma_gd', $gd)->delete();
+        LichHoc::whereIn('ma_gd', $gd)->delete();
+        LichDay::where('ma_gv', $id)->delete();
+        User::where('username', $id)->delete();
+        GiaoVien::where('ma_gv', $id)->delete();
+
+        return response()->json([
+            'message' => "Xóa thành công",
+        ]);
     }
 
     public function store(Request $request)

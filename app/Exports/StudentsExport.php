@@ -21,20 +21,30 @@ class StudentsExport implements FromCollection, WithHeadings, WithMapping
     {
         return collect($this->data);
     }
-
+    private $rowNumber = 0;
     public function headings(): array
     {
         return [
-            'Key', 'Tên SV', 'Ngày Sinh', 'Mã Sinh Viên', 'Tên Lớp', 'Tên Khoa'
+            'STT',
+            'Mã Sinh Viên',
+            'Tên SV',
+            'Ngày Sinh',
+            'Giới tính',
+            'Địa chỉ',
+            'Tên Lớp',
+            'Tên Khoa'
         ];
     }
     public function map($row): array
     {
+        $this->rowNumber++;
         return [
-            $row['key'],
+            $this->rowNumber,
+            $row['ma_sv'],
             $row['ten_sv'],
             $row['ngay_sinh'],
-            $row['ma_sv'],
+            $row['phai'],
+            $row['dia_chi'],
             $row['ten_lop'],
             $row['ten_khoa']
         ];

@@ -146,10 +146,12 @@ class DiemDanhController extends Controller
                                 "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
                             ]);
                         } else {
-                            // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
-                            $existingRecord->update([
-                                "diem_danh2" => $currentDate,
-                            ]);
+                            if ($existingRecord->ghi_chu !== 'có phép') {
+                                // Thực hiện cập nhật nếu ghi_chu có giá trị 'co_phep'
+                                $existingRecord->update([
+                                    "diem_danh2" => $currentDate,
+                                ]);
+                            }
                         }
                     } else if ($student['co_phep']) {
                         if (!$existingRecord) {
@@ -157,14 +159,15 @@ class DiemDanhController extends Controller
                                 "ma_tkb" => $tkb->ma_tkb,
                                 "ma_sv" => $student["ma_sv"], // Cung cấp giá trị ma_sv
                                 "ngay_hoc" => $student["ngay_diem_danh"],
-                                "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "",
-                            ]);
-                        } else {
-                            // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
-                            $existingRecord->update([
-                                "ghi_chu" => 'có phép'
+                                "ghi_chu" => $student["ghi_chu"] ? $student["ghi_chu"] : "có phép",
                             ]);
                         }
+                        //  else {
+                        //     // Nếu đã có bản ghi có diem_danh1 là null, thì cập nhật diem_danh2
+                        //     $existingRecord->update([
+                        //         "ghi_chu" => 'có phép'
+                        //     ]);
+                        // }
                     } else if ($student['khong_phep']) {
                         // if (!$existingRecord) {
                         //     DiemDanh::create([
@@ -253,6 +256,7 @@ class DiemDanhController extends Controller
                         'ma_sv' => $ma_sv,
                         'ngay_hoc' => $day,
                         'diem_danh1' => $attendaceTime,
+                        'ghi_chu' => "",
                     ]);
                     return response()->json([
                         'message' => "Điểm danh thành công"
@@ -263,6 +267,7 @@ class DiemDanhController extends Controller
                         'ma_sv' => $ma_sv,
                         'ngay_hoc' => $day,
                         'diem_danh2' => $attendaceTime,
+                        'ghi_chu' => "",
                     ]);
                     return response()->json([
                         'message' => "Điểm danh thành công"
@@ -284,36 +289,47 @@ class DiemDanhController extends Controller
             $tkb = Tkb::where('ma_gd', $ma_gd)
                 ->pluck('ma_tkb');
 
-            $diemdanh = DiemDanh::whereIn('ma_tkb', $tkb)
-                ->select('ma_dd', 'ma_sv')
-                ->get();
             $sinhviens = LichHoc::where('ma_gd', $ma_gd)
                 ->select('ma_sv')
                 ->get();
 
             $sinhviens->map(function ($sinhvien) use ($tkb) {
-                $sinhvien->sbh = $tkb->count();
+                $sessions = [];
 
+                foreach ($tkb as $index => $ma_tkb) {
+                    $diemDanh = DiemDanh::where('ma_tkb', $ma_tkb)
+                        ->where('ma_sv', $sinhvien->ma_sv)
+                        ->select('ghi_chu')
+                        ->first();
+
+                    $sessions['Buổi ' . ($index + 1)] = $diemDanh && $diemDanh->ghi_chu === 'có phép' ? 'có phép' : '';
+                }
+
+                $sinhvien->setAttribute('sessions', $sessions);
+
+                // Các thao tác khác như tính toán và gán giá trị cho sinh viên
+                $sinhvien->sbh = $tkb->count();
                 $sinhvien->sbdd = DiemDanh::whereIn('ma_tkb', $tkb)
                     ->where('ma_sv', $sinhvien->ma_sv)
+                    ->where('ghi_chu', '!=', 'có phép')
                     ->count();
-
                 $sinhvien->ten_sv = SinhVien::where('ma_sv', $sinhvien->ma_sv)
                     ->select('ten_sv')
                     ->first()->ten_sv;
-
                 $sinhvien->sbv = $sinhvien->sbh - $sinhvien->sbdd;
-
-
                 $sinhvien->ma_lop = SinhVien::where('ma_sv', $sinhvien->ma_sv)
                     ->select('ma_lop')
                     ->first()->ma_lop;
 
-
+                $sinhvien->cong_diem = DiemDanh::whereIn('ma_tkb', $tkb)
+                    ->where('ma_sv', $sinhvien->ma_sv)
+                    ->whereNotNull('diem_danh1')
+                    ->whereNotNull('diem_danh2')
+                    ->count();
                 $sinhvien->diemqt = $this->customRound($sinhvien->sbdd * (10 / $tkb->count()));
+
                 return $sinhvien;
             });
-
 
             $sinhviens = $sinhviens
                 ->sortBy(function ($sinhvien) {
@@ -322,6 +338,7 @@ class DiemDanhController extends Controller
                 })
                 ->sortBy('ma_lop')
                 ->values();
+
             return response()->json($sinhviens);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi lấy danh sách sinh viên: ' . $e->getMessage()], 500);
@@ -360,18 +377,18 @@ class DiemDanhController extends Controller
     {
         try {
             $sinhviens = $this->getDanhSachDiemDanh($ma_gd)->original;
-            $ten_mh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')->where('ma_gd', $ma_gd)->select('ten_mh')->first();
+            $ten_mh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')
+                ->where('ma_gd', $ma_gd)
+                ->select('ten_mh')
+                ->first()->ten_mh;
 
             $nmh = LichDay::where('ma_gd', $ma_gd)
-                ->select('nmh')->first();
+                ->select('nmh')
+                ->first()->nmh;
 
-            // return response()->json($sinhviens);
-            // $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh', 'nmh'));
-            // $data = $request->input('data');
-            return Excel::download(new \App\Exports\DiemDanhExport($sinhviens), 'dsdd.xlsx');
-            // return $pdf->download('danh_sach_diem_danh.pdf');
+            return Excel::download(new \App\Exports\DiemDanhExport($sinhviens, $ten_mh, $nmh), 'dsdd.xlsx');
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Đã xảy ra lỗi khi xuất PDF: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Đã xảy ra lỗi khi xuất Excel: ' . $e->getMessage()], 500);
         }
     }
 }
