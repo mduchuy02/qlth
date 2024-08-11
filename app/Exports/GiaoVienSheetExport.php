@@ -16,13 +16,15 @@ class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, Wi
     public function __construct($magd){
         $this->magd = $magd;
         $tenmh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')->where('lich_gd.ma_gd', $this->magd)->select('ten_mh')->first();
-        $this->tenmh = $tenmh->ten_mh;
+        $nmh = LichDay::where('lich_gd.ma_gd', $this->magd)->select('nmh')->first();
+        $this->nmh = $nmh->nmh ?? '';
+        $this->tenmh = $tenmh->ten_mh ?? '';
     }
     /**
      * @return string
      */
     public function title(): string{
-        return $this->tenmh;
+        return $this->tenmh . ' nhóm ' . $this->nmh;
     }
     public function headings ():array {
         return [

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiemDanh;
+use App\Models\LichHoc;
 use App\Models\SinhVien;
 use App\Models\User;
 use Exception;
@@ -52,10 +54,23 @@ class TaiKhoanSVController extends Controller
     public function destroy($id)
     {
         $account = User::where('username', $id)->first();
-        $account->delete();
-
         $user = SinhVien::where('ma_sv', $id)->first();
-        $user->delete();
+        $diemdanh = DiemDanh::where('ma_sv', $id)->first();
+        $lichhoc = LichHoc::where('ma_sv', $id)->first();
+
+        // dd($lichhoc);
+        // if($diemdanh) {
+        //     $diemdanh->delete();
+        // }
+        if($lichhoc){
+            $lichhoc->delete();
+        }
+        // if($account){
+        //     $account->delete();
+        // }
+        // if($user){
+        //     $user->delete();
+        // }
     }
 
     public function update(Request $request, $id)

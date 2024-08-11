@@ -13,15 +13,37 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class LoginController extends Controller
 {
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('username', 'password');
+    //     $user = User::where('username', $credentials['username'])->first();
+
+    //     if ($user && Hash::check($credentials['password'], $user->password)) {
+    //         $token = $user->createToken('authToken', ['*'], now()->addMinutes(120))->plainTextToken;
+
+    //         // kiểm tra sinh viên hay giáo viên
+    //         $role = $user->role;
+    //         return response()->json([
+    //             'token' => $token,
+    //             'role' => $role,
+    //         ], 200);
+    //     } else {
+    //         return response()->json(['error' => 'Thông tin đăng nhập không chính xác'], 401);
+    //     }
+    // }
     public function login(Request $request)
     {
         $credentials = $request->only('username', 'password');
-        $user = User::where('username', $credentials['username'])->first();
+
+        // Check if the provided input is an email or username
+        $user = User::where('username', $credentials['username'])
+            ->orWhere('email', $credentials['username'])
+            ->first();
 
         if ($user && Hash::check($credentials['password'], $user->password)) {
             $token = $user->createToken('authToken', ['*'], now()->addMinutes(120))->plainTextToken;
 
-            // kiểm tra sinh viên hay giáo viên
+            // Check if the user is a student or teacher
             $role = $user->role;
             return response()->json([
                 'token' => $token,
@@ -31,6 +53,8 @@ class LoginController extends Controller
             return response()->json(['error' => 'Thông tin đăng nhập không chính xác'], 401);
         }
     }
+
+
     public function validateToken(Request $request)
     {
         $token = $request->token;

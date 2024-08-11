@@ -365,10 +365,20 @@ class DiemDanhController extends Controller
             $nmh = LichDay::where('ma_gd', $ma_gd)
                 ->select('nmh')->first();
 
+            $ten_mh = utf8_encode($ten_mh->ten_mh ?? '');
+            $nmh = utf8_encode($nmh->nmh ?? '');
+
+
+            $fileName = $ten_mh . '_' . $nmh . '.xlsx';
+
             // return response()->json($sinhviens);
             // $pdf = Pdf::loadView('attendance', compact('sinhviens', 'ten_mh', 'nmh'));
             // $data = $request->input('data');
-            return Excel::download(new \App\Exports\DiemDanhExport($sinhviens), 'dsdd.xlsx');
+            return response()->json([
+                'fileName' => $fileName,
+                'fileData' => Excel::raw(new \App\Exports\DiemDanhExport($sinhviens), \Maatwebsite\Excel\Excel::XLSX),
+            ]);
+
             // return $pdf->download('danh_sach_diem_danh.pdf');
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi xuất PDF: ' . $e->getMessage()], 500);

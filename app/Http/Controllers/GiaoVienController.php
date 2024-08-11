@@ -218,7 +218,7 @@ class GiaoVienController extends Controller
                     'ngay_kt' => $lichDay->ngay_kt,
                     'st_bd' => $lichDay->st_bd,
                     'st_kt' => $lichDay->st_kt,
-                    'hoc_ky' => $lichDay->hoc_ky,
+                    'hoc_ky' => $this->convertHocKy($lichDay->hoc_ky),
                     'so_luong_sinh_vien' => $lichDay->lich_hocs_count,
                 ];
             });
@@ -542,10 +542,21 @@ class GiaoVienController extends Controller
             if (!$ma_gv) {
                 return response()->json(['error' => 'Unauthenticated.'], 401);
             }
-            return (new GiaoVienExport($ma_gd))->download('test.xlsx');
+            return (new GiaoVienExport($ma_gd))->download('AttendanceList.xlsx');
         } catch (\Exception $e) {
             return response()->json(['error' => 'Something went wrong'], 500);
         }
 
+    }
+
+    private function convertHocKy($hoc_ky)
+    {
+        $yearPrefix = '20';
+        $semester = substr($hoc_ky, 0, 1); 
+        $yearSuffix = substr($hoc_ky, 1, 2);
+        $startYear = $yearPrefix . $yearSuffix;
+        $endYear = $yearPrefix . ($yearSuffix + 1);
+
+        return "Học kỳ $semester năm học $startYear-$endYear";
     }
 }
