@@ -22,6 +22,7 @@ class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, Wi
     public function __construct($magd)
     {
         $this->magd = $magd;
+
         $this->data = $this->getDanhSachDiemDanh($magd);
         $lichDay = LichDay::where('ma_gd', $this->magd)->first();
 
@@ -29,14 +30,17 @@ class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, Wi
             $this->tenmh = $lichDay->monHoc->ten_mh;
             $this->nmh = $lichDay->nmh;
         }
+
     }
 
     /**
      * @return string
      */
+
     public function title(): string
     {
         return ($this->tenmh ?? 'Môn học') . ' ' . ($this->nmh ?? 'NMH');
+
     }
 
     public function headings(): array

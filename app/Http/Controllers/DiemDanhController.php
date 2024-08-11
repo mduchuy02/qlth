@@ -386,7 +386,9 @@ class DiemDanhController extends Controller
                 ->select('nmh')
                 ->first()->nmh;
 
+
             return Excel::download(new \App\Exports\DiemDanhExport($sinhviens, $ten_mh, $nmh), 'dsdd.xlsx');
+
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi xuất Excel: ' . $e->getMessage()], 500);
         }

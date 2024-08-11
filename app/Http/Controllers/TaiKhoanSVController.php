@@ -54,6 +54,7 @@ class TaiKhoanSVController extends Controller
     public function destroy($id)
     {
 
+
         $student = SinhVien::find($id);
 
         if (!$student) {
@@ -65,6 +66,7 @@ class TaiKhoanSVController extends Controller
         $student->delete();
 
         return response()->json(['message' => 'Xóa sinh viên thành công'], 200);
+
     }
 
 
