@@ -53,25 +53,22 @@ class TaiKhoanSVController extends Controller
     }
     public function destroy($id)
     {
-        $account = User::where('username', $id)->first();
-        $user = SinhVien::where('ma_sv', $id)->first();
-        $diemdanh = DiemDanh::where('ma_sv', $id)->first();
-        $lichhoc = LichHoc::where('ma_sv', $id)->first();
 
-        // dd($lichhoc);
-        // if($diemdanh) {
-        //     $diemdanh->delete();
-        // }
-        if($lichhoc){
-            $lichhoc->delete();
+
+        $student = SinhVien::find($id);
+
+        if (!$student) {
+            return response()->json(['message' => 'Sinh viên không tồn tại'], 404);
         }
-        // if($account){
-        //     $account->delete();
-        // }
-        // if($user){
-        //     $user->delete();
-        // }
+        DiemDanh::where('ma_sv', $student->ma_sv)->delete();
+        LichHoc::where('ma_sv', $student->ma_sv)->delete();
+        User::where('ma_sv', $student->ma_sv)->delete();
+        $student->delete();
+
+        return response()->json(['message' => 'Xóa sinh viên thành công'], 200);
+
     }
+
 
     public function update(Request $request, $id)
     {
@@ -82,7 +79,7 @@ class TaiKhoanSVController extends Controller
             'dia_chi' => 'required|string|max:300',
             'sdt' => 'required|string|max:11',
             'email' => 'required|email|max:50',
-            'ma_lop' => 'required|exists:lop,ma_lop', // Ensure ma_lop exists in lop table
+            'ma_lop' => 'required|exists:lop,ma_lop',
             'password' => 'sometimes|nullable|string|min:8|confirmed'
         ]);
         $taikhoan = User::where('username', $id)->firstOrFail();
@@ -101,14 +98,19 @@ class TaiKhoanSVController extends Controller
             $taikhoan->password = Hash::make($request->password);
             $taikhoan->save();
         }
-
         return response()->json(['message' => 'Cập nhật thành công!'], 200);
     }
     public function store(Request $request)
     {
         $request->validate([
-            'ma_sv' => 'required|string|max:10|min:10|unique:sinh_vien|regex:/^DH\d+$/',
-            'ten_sv' => 'required|string|max:150',
+            'ma_sv' => [
+                'required',
+                'string',
+                'size:10',
+                'unique:sinh_vien',
+                'regex:/^(CD|DH)\d{8}$/',
+            ],
+            'ten_sv' => 'required|string|max:150|regex:/^[\p{L}\s\.\']+$/u',
             'ngay_sinh' => [
                 'required',
                 'date',
@@ -135,14 +137,14 @@ class TaiKhoanSVController extends Controller
         ], [
             'ma_sv.required' => 'Nhập mã sinh viên',
             'ma_sv.string' => 'Mã sinh viên phải là chuỗi',
-            'ma_sv.max' => 'Mã sinh viên không được vượt quá 10 ký tự',
             'ma_sv.unique' => 'Mã sinh viên đã tồn tại',
             'ma_sv.regex' => 'Mã sinh viên không hợp lệ',
-            'ma_sv.min' => 'Mã sinh viên phải đủ 10 ký tự',
+            'ma_sv.size' => 'Mã sinh viên phải có 10 ký tự',
 
             'ten_sv.required' => 'Nhập tên sinh viên',
             'ten_sv.string' => 'Tên sinh viên phải là chuỗi',
             'ten_sv.max' => 'Tên sinh viên không được vượt quá 150 ký tự',
+            'ten_sv.regex' => 'Tên sinh viên không hợp lệ',
 
             'ngay_sinh.required' => 'Chọn ngày sinh',
             'ngay_sinh.date' => 'Ngày sinh phải có định dạng ngày',

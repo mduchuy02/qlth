@@ -29,7 +29,6 @@ class StudentsImport implements ToModel, WithHeadingRow
                     "dia_chi" => $row['dia_chi'],
                     "sdt" => $row['sdt'],
                     "email" => $row['email'],
-                    "anh_qr" => $row['anh_qr'],
                     "ma_lop" => $row['ma_lop'],
                 ]
             );

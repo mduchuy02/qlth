@@ -114,18 +114,19 @@ class GiaoVienController extends Controller
                 'st_kt' => 'Chọn số tiết kết thúc',
                 'st_kt.gt' => 'Số tiết kết thúc phải lớn hơn số tiết bắt đầu',
                 'hoc_ky' => 'Chọn học kỳ',
+                'nmh' => 'Chọn nhóm môn học'
             ]
         );
 
         try {
 
-            //kiểm tra nmh
-            $nmhExists = LichDay::where('ma_gv', $request->ma_gv)
-                ->where('ma_mh', $request->ma_mh)
+
+            $nmhExists = LichDay::where('ma_mh', $request->ma_mh)
                 ->where('nmh', $request->nmh)
+                ->where('hoc_ky', $request->hoc_ky)
                 ->exists();
             if ($nmhExists) {
-                return response()->json(['error' => 'Vui lòng chọn nhóm môn học khác.'], 400);
+                return response()->json(['error' => 'Nhóm môn học đã tồn tại.'], 400);
             }
 
             // kiểm tra phòng học
@@ -208,6 +209,11 @@ class GiaoVienController extends Controller
             ->orderBy('lich_gd.nmh')
             ->get()
             ->map(function ($lichDay) {
+                $hoc_ky_number = substr($lichDay->hoc_ky, 0, 1); // Lấy ký tự đầu tiên
+                $year_suffix = substr($lichDay->hoc_ky, 1); // Lấy hai ký tự cuối
+
+                // Xác định học kỳ và năm học
+                $hoc_ky = "Học kỳ $hoc_ky_number năm 20$year_suffix";
                 return [
                     'ma_gd' => $lichDay->ma_gd,
                     'ma_mh' => $lichDay->monHoc->ma_mh,
@@ -218,7 +224,9 @@ class GiaoVienController extends Controller
                     'ngay_kt' => $lichDay->ngay_kt,
                     'st_bd' => $lichDay->st_bd,
                     'st_kt' => $lichDay->st_kt,
+
                     'hoc_ky' => $this->convertHocKy($lichDay->hoc_ky),
+
                     'so_luong_sinh_vien' => $lichDay->lich_hocs_count,
                 ];
             });
@@ -443,17 +451,18 @@ class GiaoVienController extends Controller
                 'buoi_hoc.*.st_kt.required' => 'Chọn số tiết kết thúc',
                 'buoi_hoc.*.st_kt.gt' => 'Số tiết kết thúc phải lớn hơn số tiết bắt đầu',
                 'hoc_ky.required' => 'Chọn học kỳ',
+                'nmh' => 'Chọn nhóm môn học'
             ]
         );
 
         try {
             // Kiểm tra nmh
-            $nmhExists = LichDay::where('ma_gv', $request->ma_gv)
-                ->where('ma_mh', $request->ma_mh)
+            $nmhExists = LichDay::where('ma_mh', $request->ma_mh)
                 ->where('nmh', $request->nmh)
+                ->where('hoc_ky', $request->hoc_ky)
                 ->exists();
             if ($nmhExists) {
-                return response()->json(['error' => 'Vui lòng chọn nhóm môn học khác.'], 400);
+                return response()->json(['error' => 'Nhóm môn học đã tồn tại.'], 400);
             }
 
             // Lấy tất cả các ma_gd của giáo viên
@@ -546,7 +555,74 @@ class GiaoVienController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Something went wrong'], 500);
         }
+    }
 
+
+    public function lookUpInformation(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'ma_gv' => 'required|string|max:20',
+        ]);
+
+        $searchTerm = strtolower($request->input('name')); // Tìm kiếm có thể là tên hoặc mã
+        $ma_gv = $request->input('ma_gv');
+        $ma_gds = LichDay::where('ma_gv', $ma_gv)
+            ->pluck('ma_gd');
+
+        $students = SinhVien::select('sinh_vien.ma_sv', 'sinh_vien.ten_sv', 'lop.ten_lop')
+            ->join('lop', 'sinh_vien.ma_lop', '=', 'lop.ma_lop')
+            ->whereHas('lichHocs', function ($query) use ($ma_gds) {
+                $query->whereIn('ma_gd', $ma_gds);
+            })
+            ->where(function ($query) use ($searchTerm) {
+                $query->where('sinh_vien.ten_sv', 'like', "%{$searchTerm}%")
+                    ->orWhere('sinh_vien.ma_sv', 'like', "%{$searchTerm}%");
+            })
+            ->orderBy('lop.ten_lop')
+            ->orderByRaw("SUBSTRING_INDEX(sinh_vien.ten_sv, ' ', -1)")
+            ->get();
+
+        return response()->json($students);
+    }
+
+
+
+    public function getInformation($ma_sv)
+    {
+        // Lấy thông tin sinh viên
+        $student = SinhVien::with(['lop', 'lichHocs.lichGD.monHoc', 'lichHocs.lichGD.giaoVien'])
+            ->where('ma_sv', $ma_sv)
+            ->first();
+
+        if (!$student) {
+            return response()->json(['message' => 'Không tìm thấy sinh viên'], 404);
+        }
+
+        // Lấy thông tin lịch giảng dạy của sinh viên
+        $teachingSchedules = $student->lichHocs->map(function ($lichHoc) {
+            return $lichHoc->lichGD->only(['ma_gd', 'ma_mh', 'nmh']) + [
+                'ten_mh' => $lichHoc->lichGD->monHoc->ten_mh,
+                'ten_gv' => optional($lichHoc->lichGD->giaoVien)->ten_gv,
+            ];
+        });
+
+        return response()->json([
+            'student' => [
+                'ma_sv' => $student->ma_sv,
+                'ten_sv' => $student->ten_sv,
+                'ngay_sinh' => $student->ngay_sinh,
+                'phai' => $student->phai == 1 ? 'Nam' : 'Nữ',
+                'dia_chi' => $student->dia_chi,
+                'sdt' => $student->sdt,
+                'email' => $student->email,
+                'avatar' => $student->avatar,
+                'ten_lop' => optional($student->lop)->ten_lop,
+                'gvcn' => optional($student->lop)->gvcn,
+                'sdt_gvcn' => optional($student->lop)->sdt_gvcn,
+            ],
+            'teachingSchedules' => $teachingSchedules,
+        ]);
     }
 
     private function convertHocKy($hoc_ky)

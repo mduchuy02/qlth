@@ -15,12 +15,14 @@ class Lop extends Model
     protected $primaryKey = 'ma_lop';
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = false; 
+    public $timestamps = false;
 
     protected $fillable = [
         'ma_lop',
         'ten_lop',
         'ma_khoa',
+        'gvcn',
+        'sdt_gvcn',
     ];
 
     public function khoa(): BelongsTo
@@ -32,5 +34,4 @@ class Lop extends Model
     {
         return $this->hasMany(SinhVien::class, 'ma_lop', 'ma_lop');
     }
-
 }

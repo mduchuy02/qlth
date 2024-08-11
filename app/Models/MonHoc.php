@@ -21,13 +21,9 @@ class MonHoc extends Model
         'so_tiet',
     ];
 
-    public function ketQuas(): HasMany
-    {
-        return $this->hasMany(KetQua::class, 'ma_mh', 'ma_mh');
-    }
+
     public function lichDays(): HasMany
     {
         return $this->hasMany(LichDay::class, 'ma_mh', 'ma_mh');
     }
-
 }

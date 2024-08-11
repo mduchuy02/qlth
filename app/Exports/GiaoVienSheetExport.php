@@ -1,72 +1,158 @@
 <?php
 
 namespace App\Exports;
+
 use App\Models\DiemDanh;
 use App\Models\LichDay;
+use App\Models\LichHoc;
+use App\Models\SinhVien;
+use App\Models\Tkb;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Illuminate\Support\Facades\Auth;
 
 class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, WithMapping
 {
     public $magd;
+    public $data;
     public $tenmh;
-    public function __construct($magd){
+    public $nmh;
+    public function __construct($magd)
+    {
         $this->magd = $magd;
-        $tenmh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')->where('lich_gd.ma_gd', $this->magd)->select('ten_mh')->first();
-        $nmh = LichDay::where('lich_gd.ma_gd', $this->magd)->select('nmh')->first();
-        $this->nmh = $nmh->nmh ?? '';
-        $this->tenmh = $tenmh->ten_mh ?? '';
+
+        $this->data = $this->getDanhSachDiemDanh($magd);
+        $lichDay = LichDay::where('ma_gd', $this->magd)->first();
+
+        if ($lichDay) {
+            $this->tenmh = $lichDay->monHoc->ten_mh;
+            $this->nmh = $lichDay->nmh;
+        }
+
     }
+
     /**
      * @return string
      */
-    public function title(): string{
-        return $this->tenmh . ' nhóm ' . $this->nmh;
-    }
-    public function headings ():array {
-        return [
-            'Mã sinh viên',
-            'Tên sinh viên',
-            'Số buổi học',
-            'Số buổi điểm danh',
-            'Số buổi vắng'
-        ];
-    }
-    public function collection()
+
+    public function title(): string
     {
-        $query = LichDay::join('lich_hoc', 'lich_hoc.ma_gd', 'lich_gd.ma_gd')
-            ->join('sinh_vien', 'sinh_vien.ma_sv', 'lich_hoc.ma_sv')
-            ->join('tkb','tkb.ma_gd','lich_hoc.ma_gd')
-            ->leftJoin('diem_danh', function ($join) {
-                $join->on('lich_hoc.ma_sv', '=', 'diem_danh.ma_sv')
-                    ->on('tkb.ma_tkb', '=', 'diem_danh.ma_tkb');
-            })
-            ->select(
-                'sinh_vien.ma_sv',
-                'sinh_vien.ten_sv',
-                \DB::raw('COUNT(DISTINCT diem_danh.ma_tkb) as so_buoi_diem_danh'),
-                \DB::raw('COUNT(DISTINCT tkb.ma_tkb) as so_buoi_hoc')
-            )
-            ->where('lich_hoc.ma_gd',$this->magd)
-            ->groupBy('sinh_vien.ma_sv', 'sinh_vien.ten_sv')
-            ->get();
-        // dd($query);
-        foreach ($query as $item) {
-            $item->so_buoi_vang = $item->so_buoi_hoc - $item->so_buoi_diem_danh;
+        return ($this->tenmh ?? 'Môn học') . ' ' . ($this->nmh ?? 'NMH');
+
+    }
+
+    public function headings(): array
+    {
+        if ($this->data->isEmpty()) {
+            return [];
         }
 
-        return collect($query);
+        $sinhvien = $this->data->first();
+        $sessionHeadings = array_keys($sinhvien->sessions);
+
+        return array_merge([
+            'Tên sinh viên',
+            'Mã sinh viên',
+            'Tên lớp',
+            'Số buổi học',
+        ], $sessionHeadings, [
+            'Số Buổi có mặt',
+            'Số buổi vắng',
+            'Số buổi điểm danh 2 lần',
+            'Điểm quá trình',
+        ]);
     }
-    public function map($row): array {
-        return [
-            $row['ma_sv'],
+
+    public function collection()
+    {
+        return $this->data;
+    }
+
+    public function map($row): array
+    {
+        $sessions = array_values($row->sessions);
+        return array_merge([
             $row['ten_sv'],
-            $row['so_buoi_hoc'],
-            $row['so_buoi_diem_danh'],
-            $row['so_buoi_vang']
-        ];
+            $row['ma_sv'],
+            $row['ma_lop'],
+            $row['sbh'],
+        ], $sessions, [
+            $row['sbdd'],
+            $row['sbv'],
+            $row['cong_diem'],
+            $row['diemqt'],
+        ]);
+    }
+
+    private function getDanhSachDiemDanh($ma_gd)
+    {
+        try {
+            $ma_gv = Auth::user()->username;
+
+            $tkb = Tkb::where('ma_gd', $ma_gd)
+                ->pluck('ma_tkb');
+
+            $sinhviens = LichHoc::where('ma_gd', $ma_gd)
+                ->select('ma_sv')
+                ->get();
+            $sinhviens->map(function ($sinhvien) use ($tkb) {
+                $sessions = [];
+
+                foreach ($tkb as $index => $ma_tkb) {
+                    $diemDanh = DiemDanh::where('ma_tkb', $ma_tkb)
+                        ->where('ma_sv', $sinhvien->ma_sv)
+                        ->select('ghi_chu')
+                        ->first();
+
+                    $sessions['Buổi ' . ($index + 1)] = $diemDanh && $diemDanh->ghi_chu === 'có phép' ? 'có phép' : '';
+                }
+                $sinhvien->setAttribute('sessions', $sessions);
+
+                $sinhvien->sbh = $tkb->count();
+                $sinhvien->sbdd = DiemDanh::whereIn('ma_tkb', $tkb)
+                    ->where('ma_sv', $sinhvien->ma_sv)
+                    ->where('ghi_chu', '!=', 'có phép')
+                    ->count();
+                $sinhvien->ten_sv = SinhVien::where('ma_sv', $sinhvien->ma_sv)
+                    ->select('ten_sv')
+                    ->first()->ten_sv;
+                $sinhvien->sbv = $sinhvien->sbh - $sinhvien->sbdd;
+                $sinhvien->ma_lop = SinhVien::where('ma_sv', $sinhvien->ma_sv)
+                    ->select('ma_lop')
+                    ->first()->ma_lop;
+
+                $sinhvien->cong_diem = DiemDanh::whereIn('ma_tkb', $tkb)
+                    ->where('ma_sv', $sinhvien->ma_sv)
+                    ->whereNotNull('diem_danh1')
+                    ->whereNotNull('diem_danh2')
+                    ->count();
+                $sinhvien->diemqt = $this->customRound($sinhvien->sbdd * (10 / $tkb->count()));
+
+                return $sinhvien;
+            });
+
+            $sinhviens = $sinhviens
+                ->sortBy(function ($sinhvien) {
+                    $names = explode(' ', $sinhvien->ten_sv);
+                    return end($names);
+                })
+                ->sortBy('ma_lop')
+                ->values();
+
+            return $sinhviens;
+        } catch (\Exception $e) {
+            return collect([
+                (object)[
+                    'message' => 'Đã xảy ra lỗi khi lấy danh sách sinh viên: ' . $e->getMessage()
+                ]
+            ]);
+        }
+    }
+
+    private function customRound($value)
+    {
+        return round($value, 2);
     }
 }

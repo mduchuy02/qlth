@@ -9,8 +9,8 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class GiaoVienExport implements WithMultipleSheets
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     use Exportable;
     protected $data;
     public function __construct($data)
@@ -20,8 +20,8 @@ class GiaoVienExport implements WithMultipleSheets
     public function sheets(): array
     {
         $sheets = [];
-        
-        foreach($this->data as $magd) {
+
+        foreach ($this->data as $magd) {
             $sheets[] = new GiaoVienSheetExport($magd);
         }
 
