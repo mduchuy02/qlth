@@ -106,7 +106,7 @@ class TaiKhoanGVController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_gv' => 'required|string|max:10|min:8|unique:giao_vien|regex:/^DH[A-Z]{2}[0-9]{4}$/',
+            'ma_gv' => 'required|string|max:10|min:8|unique:giao_vien',
             'ten_gv' => 'required|string|max:150',
             'ngay_sinh' => [
                 'required',
@@ -136,7 +136,7 @@ class TaiKhoanGVController extends Controller
             'ma_gv.max' => 'Mã giáo viên không được vượt quá 10 ký tự',
             'ma_gv.unique' => 'Mã giáo viên đã tồn tại',
             'ma_gv.min' => 'Mã giảo viên phải đủ 8 ký tự',
-            'ma_gv.regex' =>  'Mã giáo viên không hợp lệ',
+            // 'ma_gv.regex' =>  'Mã giáo viên không hợp lệ',
 
             'ten_gv.required' => 'Nhập tên giáo viên',
             'ten_gv.string' => 'Tên giáo viên phải là chuỗi',
