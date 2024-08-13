@@ -48,7 +48,9 @@ class SinhVienController extends Controller
         $ma_tkb = substr($code, 0, $hyphenPos);
         $formattedStartScan = Carbon::parse($thoi_gian_dd)->format('Y-m-d H:i:s');
         $ngay_dd = Carbon::parse($thoi_gian_dd)->format('Y-m-d');
-        $trang_thai = substr($code, $hyphenPos + 1, strpos($code, '-', $hyphenPos) - 1); // điểm danh lần 1 hoặc 2
+        // $trang_thai = substr($code, $hyphenPos + 1, strpos($code, '-', $hyphenPos) - 1); // điểm danh lần 1 hoặc 2
+        $part = explode('-', $code);
+        $trang_thai = $part[1];
         //Kiểm tra xem mã Qr có hợp lệ hay không
         if (!preg_match('/^\d+-\d{1}-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{2}:\d{2}$/', $code)) {
             return response()->json([
