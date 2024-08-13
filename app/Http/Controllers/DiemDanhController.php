@@ -303,7 +303,16 @@ class DiemDanhController extends Controller
                         ->select('ghi_chu')
                         ->first();
 
-                    $sessions['Buổi ' . ($index + 1)] = $diemDanh && $diemDanh->ghi_chu === 'có phép' ? 'có phép' : '';
+                    if ($diemDanh) {
+                        if ($diemDanh->ghi_chu === 'có phép') {
+                            $sessions['Buổi ' . ($index + 1)] = 'có phép';
+                        } else {
+                            $sessions['Buổi ' . ($index + 1)] = '';
+                        }
+                    } else {
+                        $sessions['Buổi ' . ($index + 1)] = 'x';
+                    }
+
                 }
 
                 $sinhvien->setAttribute('sessions', $sessions);
