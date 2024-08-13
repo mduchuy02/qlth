@@ -195,7 +195,10 @@ class PDTController extends Controller
             Excel::import(new StudentsImport(), $file);
             return response()->json(['message' => 'Import Thành công'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Lỗi Import Vui lòng thử lại '], 500);
+            return response()->json([
+                'message' => 'Lỗi Import Vui lòng thử lại ',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

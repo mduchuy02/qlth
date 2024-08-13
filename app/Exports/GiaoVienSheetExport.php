@@ -30,7 +30,6 @@ class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, Wi
             $this->tenmh = $lichDay->monHoc->ten_mh;
             $this->nmh = $lichDay->nmh;
         }
-
     }
 
     /**
@@ -40,7 +39,6 @@ class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, Wi
     public function title(): string
     {
         return ($this->tenmh ?? 'Môn học') . ' ' . ($this->nmh ?? 'NMH');
-
     }
 
     public function headings(): array
@@ -151,8 +149,17 @@ class GiaoVienSheetExport implements WithTitle, WithHeadings, FromCollection, Wi
         }
     }
 
-    private function customRound($value)
+    private function customRound($number)
     {
-        return round($value, 2);
+        $intPart = floor($number);
+        $decimalPart = $number - $intPart;
+
+        if ($decimalPart < 0.25) {
+            return $intPart + 0.0;
+        } elseif ($decimalPart < 0.75) {
+            return $intPart + 0.5;
+        } else {
+            return $intPart + 1.0;
+        }
     }
 }

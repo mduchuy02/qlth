@@ -14,6 +14,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 class DiemDanhController extends Controller
 {
@@ -377,18 +378,23 @@ class DiemDanhController extends Controller
     {
         try {
             $sinhviens = $this->getDanhSachDiemDanh($ma_gd)->original;
-            $ten_mh = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')
+
+            // Lấy tên môn học và số môn học
+            $monHoc = LichDay::join('mon_hoc', 'mon_hoc.ma_mh', 'lich_gd.ma_mh')
                 ->where('ma_gd', $ma_gd)
-                ->select('ten_mh')
-                ->first()->ten_mh;
+                ->select('ten_mh', 'nmh')
+                ->first();
 
-            $nmh = LichDay::where('ma_gd', $ma_gd)
-                ->select('nmh')
-                ->first()->nmh;
+            $ten_mh = $monHoc->ten_mh;
+            $nmh = $monHoc->nmh;
 
+            $tenTep = str_replace(' ', '-', strtolower($ten_mh)) . '-' . $nmh . '.xlsx';
 
-            return Excel::download(new \App\Exports\DiemDanhExport($sinhviens, $ten_mh, $nmh), 'dsdd.xlsx');
-
+            $file = Excel::raw(new \App\Exports\DiemDanhExport($sinhviens, $ten_mh, $nmh), \Maatwebsite\Excel\Excel::XLSX);
+            return response()->json([
+                'filename' => $tenTep,
+                'file' => base64_encode($file),
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi khi xuất Excel: ' . $e->getMessage()], 500);
         }
